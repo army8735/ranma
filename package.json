@@ -17,6 +17,7 @@
   },
   "keywords": [
     "converter",
+	"commonjs",
     "amd",
     "cmd"
   ],
@@ -28,7 +29,7 @@
     }
   ],
   "dependencies": {},
-  "main": "./server/ranma",
+  "main": "./ranma",
   "engines": {
     "node": ">= 0.10.0"
   },
