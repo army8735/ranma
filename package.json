@@ -1,6 +1,6 @@
 {
   "name": "ranma",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a converter between CommonJS and XMD(AMD/CMD)",
   "maintainers": [
     {
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/army8735/more.git"
+    "url": "git://github.com/army8735/ranma.git"
   },
   "keywords": [
     "converter",
