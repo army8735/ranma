@@ -1,4 +1,4 @@
-##A converter between CommonJS and XMD(AMD/CMD)
+##A converter between CommonJS and AMD/CMD
 
 The javascript lexer bases on jssc: https://github.com/army8735/jssc
 

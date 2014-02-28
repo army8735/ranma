@@ -81,7 +81,7 @@ exports.type = function(code) {
                     }
                 }
             }
-            else(['require', 'exports', 'module'].indexOf(token.val()) > -1)) {
+            else if(['require', 'exports', 'module'].indexOf(token.val()) > -1) {
                 //可能是xxx.require，需忽略，但window.require等类似变量赋值无法做到，需语义分析
                 var prev = tokens[i-1];
                 if(prev && prev.val() == '.') {
@@ -99,32 +99,17 @@ exports.cj2amd = function(code) {
     if(type == exports.COMMONJS) {
 
     }
-    else if(type == exports.CMD) {
-        return code;
-    }
-    else if(type == exports.AMD) {
-        return code;
-    }
-    else {
-        throw new Error('the code is not CommonJS: ' + code);
-    }
-    return '';
+    return code;
 }
 exports.cj2cmd = function(code) {
     var type = exports.type(code);
     if(type == exports.COMMONJS) {
 
     }
-    else if(type == exports.CMD) {
-        return code;
-    }
     else if(type == exports.AMD) {
         throw new Error('the code is AMD: ' + code);
     }
-    else {
-        throw new Error('the code is not CommonJS: ' + code);
-    }
-    return '';
+    return code;
 }
 exports.amd2cj = function(code) {
     return '';
@@ -137,17 +122,4 @@ exports.amd2cmd = function(code) {
 }
 exports.cmd2amd = function(code) {
     return '';
-}
-exports.autoc = function(code) {
-    var type = exports.type(code);
-    if(type == exports.COMMONJS) {
-        return exports.cj2cmd(code);
-    }
-    else if(type == exports.CMD) {
-        return exports.cmd2cj(code);
-    }
-    else if(type == exports.AMD) {
-        return exports.amd2cj(code);
-    }
-    return code;
 }
