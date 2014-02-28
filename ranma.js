@@ -5,6 +5,8 @@ var character = require('./util/character');
 
 var lexer = new Lexer(new EsRule());
 
+var cjsify = require('./cjsify')
+
 exports.UNKNOW = 0;
 exports.COMMONJS = 1;
 exports.AMD = 2;
@@ -107,7 +109,7 @@ exports.cj2cmd = function(code) {
 
     }
     else if(type == exports.AMD) {
-        throw new Error('the code is AMD: ' + code);
+        throw new Error('the code is AMD.\n' + code);
     }
     return code;
 }
@@ -122,4 +124,17 @@ exports.amd2cmd = function(code) {
 }
 exports.cmd2amd = function(code) {
     return '';
+}
+exports.cjsify = function(code) {
+    var type = exports.type(code);
+    if(type == exports.UNKNOW) {
+        return cjsify.convert(code);
+    }
+    else if(type == exports.AMD) {
+
+    }
+    else if(type == exports.CMD) {
+
+    }
+    return code;
 }
