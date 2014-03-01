@@ -96,35 +96,7 @@ exports.type = function(code) {
     return type;
 }
 
-exports.cj2amd = function(code) {
-    var type = exports.type(code);
-    if(type == exports.COMMONJS) {
 
-    }
-    return code;
-}
-exports.cj2cmd = function(code) {
-    var type = exports.type(code);
-    if(type == exports.COMMONJS) {
-
-    }
-    else if(type == exports.AMD) {
-        throw new Error('the code is AMD.\n' + code);
-    }
-    return code;
-}
-exports.amd2cj = function(code) {
-    return '';
-}
-exports.cmd2cj = function(code) {
-    return '';
-}
-exports.amd2cmd = function(code) {
-    return '';
-}
-exports.cmd2amd = function(code) {
-    return '';
-}
 exports.cjsify = function(code) {
     var type = exports.type(code);
     if(type == exports.UNKNOW) {
@@ -136,5 +108,28 @@ exports.cjsify = function(code) {
     else if(type == exports.CMD) {
 
     }
+    //default is cj
+    return code;
+}
+exports.amdify = function(code) {
+    var type = exports.type(code);
+    if(type == exports.COMMONJS) {
+    }
+    else if(type == exports.CMD) {
+    }
+    else if(type == exports.UNKNOW) {
+    }
+    //default is amd
+    return code;
+}
+exports.cmdify = function(code) {
+    var type = exports.type(code);
+    if(type == exports.COMMONJS) {
+    }
+    else if(type == exports.AMD) {
+    }
+    else if(type == exports.UNKNOW) {
+    }
+    //default is cmd
     return code;
 }
