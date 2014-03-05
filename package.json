@@ -1,7 +1,7 @@
 {
   "name": "ranma",
   "version": "0.0.2",
-  "description": "a converter between CommonJS and AMD/CMD",
+  "description": "a converter between CommonJS/AMD/CMD/other",
   "maintainers": [
     {
       "name": "army8735",
@@ -16,7 +16,7 @@
     "url": "git://github.com/army8735/ranma.git"
   },
   "keywords": [
-    "converter",
+    "convert",
     "commonjs",
     "amd",
     "cmd"
@@ -33,8 +33,5 @@
   "engines": {
     "node": ">= 0.10.0"
   },
-  "readmeFilename": "README.md",
-  "devDependencies": {
-    "gulp": "^3.5.2"
-  }
+  "readmeFilename": "README.md"
 }

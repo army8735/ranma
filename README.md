@@ -1,4 +1,4 @@
-##A converter between CommonJS and AMD/CMD
+##A converter between CommonJS/AMD/CMD/other
 
 The javascript lexer bases on jssc: https://github.com/army8735/jssc
 
@@ -11,6 +11,10 @@ The javascript lexer bases on jssc: https://github.com/army8735/jssc
 
 npm install ranma
 
+##test
+
+mocha
+
 ##API
 
 ranma.cjsify(code:String):String
@@ -21,6 +25,21 @@ ranma.amdify(code:String):String
 
 ranma.cmdify(code:String):String
 将代码转换为CMD
+
+ranma.TYPE.cache():Object
+调用type后词法单元缓存，tokens为全部，tokensNoIgnore为忽略ignore的类型
+
+ranma.TYPE.type(code:String):int
+返回代码类型，取值有以下几种
+
+ranma.TYPE.UNKNOW = 0
+普通写法，不属于以下类型
+ranma.TYPE.COMMONJS = 1
+CommonJS标准写法
+ranma.TYPE.AMD = 2
+AMD写法
+ranma.TYPE.CMD = 3
+CMD写法
 
 ## License
 
