@@ -19,38 +19,38 @@ exports.COMMA = ',';
 exports.SEMICOLON = ';';
 exports.EQUAL = '=';
 exports.isDigit = function(c) {
-    return c >= '0' && c <= '9';
+  return c >= '0' && c <= '9';
 };
 exports.isDigit16 = function(c) {
-    return exports.isDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+  return exports.isDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 };
 exports.isDigit2 = function(c) {
-    return c == '0' || c == '1';
+  return c == '0' || c == '1';
 };
 exports.isDigit8 = function(c) {
-    return c >= '0' && c <= '7';
+  return c >= '0' && c <= '7';
 };
 exports.isLetter = function(c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 };
 exports.count = function(s, c) {
-    var count = 0,
-        i = -1;
-    while((i = s.indexOf(c, i + 1)) != -1) {
-        count++;
-    }
-    return count;
+  var count = 0,
+    i = -1;
+  while((i = s.indexOf(c, i + 1)) != -1) {
+    count++;
+  }
+  return count;
 };
 exports.isUndefined = function(s) {
-    return typeof s == 'undefined';
+  return typeof s == 'undefined';
 };
 exports.escapeHTML = function(str) {
-    var xmlchar = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;'
-    };
-    return str.replace(/[<>&]/g, function($1){
-        return xmlchar[$1];
-    });
+  var xmlchar = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+  };
+  return str.replace(/[<>&]/g, function($1){
+    return xmlchar[$1];
+  });
 };
