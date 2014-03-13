@@ -1,7 +1,7 @@
 {
   "name": "ranma",
   "version": "0.0.2",
-  "description": "a converter between CommonJS/AMD/CMD/other",
+  "description": "A converter between CommonJS/AMD/CMD/other",
   "maintainers": [
     {
       "name": "army8735",
@@ -28,7 +28,9 @@
       "url": "https://github.com/addyosmani/es6-module-loader/blob/master/LICENSE-MIT"
     }
   ],
-  "dependencies": {},
+  "dependencies": {
+    "homunculus": "0.0.2"
+  },
   "main": "./ranma",
   "engines": {
     "node": ">= 0.10.0"

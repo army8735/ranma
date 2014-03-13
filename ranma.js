@@ -2,7 +2,7 @@ var cjsify = require('./cjsify');
 var cmdify = require('./cmdify');
 
 var type = require('./type');
-exports.TYPE = type;
+exports.type = type;
 
 exports.cjsify = function(code) {
   var tp = type.type(code);

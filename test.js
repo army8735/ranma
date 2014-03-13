@@ -1,6 +1,6 @@
 var ranma = require('./ranma');
 
 var fs = require('fs');
-var s = fs.readFileSync('./ranma.js', { encoding: 'utf-8' });
+var s = fs.readFileSync('./type.js', { encoding: 'utf-8' });
 
-console.log(ranma.type(s));
+ranma.type.type(s);
