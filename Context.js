@@ -62,8 +62,14 @@ var Context = Class(function(parent, name) {
     this.variablesMap[v] = this.variables.length;
     this.variables.push(v);
   },
-  getVars: function() {
-    return this.variables;
+  getVars: function(noParams) {
+    var self = this;
+    if(noParams) {
+      var arr = self.variables.filter(function(v) {
+        return !self.hasParam(v);
+      });
+    }
+    return self.variables;
   }
 });
 module.exports = Context;
