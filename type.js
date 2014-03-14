@@ -7,10 +7,9 @@ var isCommonJS;
 var isAMD;
 var isCMD;
 
-var varables;
-var depth;
+var Context = require('./Context');
 
-function recursion(node) {
+function recursion(node, context, global) {
   var isToken = node.name() == JsNode.TOKEN;
   var isVirtual = isToken && node.token().type() == Token.VIRTUAL;
   if(isToken) {
@@ -19,34 +18,64 @@ function recursion(node) {
   }
   else {
     if(node.name() == JsNode.VARDECL) {
-      vardecl(node);
+      vardecl(node, context);
     }
     else if(node.name() == JsNode.FNDECL) {
-      fndecl(node);
-      depth++;
-      varables.push([]);
+      context = fndecl(node, context);
+    }
+    else if(node.name() == JsNode.FNEXPR) {
+      context = fnexpr(node, context);
     }
     node.leaves().forEach(function(leaf, i) {
-      recursion(leaf);
+      recursion(leaf, context, global);
     });
-    if(node.name() == JsNode.FNDECL) {
-      depth--;
-    }
   }
 }
-function vardecl(node) {
+function vardecl(node, context) {
   var v = node.leaves()[0].leaves().content();
-  var arr = varables[depth];
-  if(arr.indexOf(v) == -1) {
-    arr.push(v);
-  }
+  context.addVar(v);
 }
-function fndecl(node) {
+function fndecl(node, context) {
   var v = node.leaves()[1].leaves().content();
-  var arr = varables[depth];
-  if(arr.indexOf(v) == -1) {
-    arr.push(v);
+  context.addVar(v);
+  var child = new Context(context, v);
+  var params = node.leaves()[3];
+  addParam(params, child);
+  return child;
+}
+function fnexpr(node, context) {
+  var v = node.leaves()[1].leaves().content();
+  if(v == '(') {
+    v = null;
   }
+  else {
+    context.addVar(v);
+  }
+  var child = new Context(context, v);
+  var params;
+  if(v) {
+    params = node.leaves()[3];
+  }
+  else {
+    params = node.leaves()[2];
+  }
+  addParam(params, child);
+  return child;
+}
+function addParam(params, child) {
+  params.leaves().forEach(function(leaf, i) {
+    if(i % 2 == 0) {
+      if(leaf.name() == JsNode.TOKEN) {
+        child.addParam(leaf.token().content());
+      }
+      else if(leaf.name() == JsNode.RESTPARAM) {
+        child.addParam(leaf.leaves()[1].token().content());
+      }
+      else if(leaf.name() == JsNode.BINDELEMENT) {
+        child.addParam(leaf.leaves()[1].leaves().token().content());
+      }
+    }
+  });
 }
 
 exports.type = function(code) {
@@ -54,12 +83,10 @@ exports.type = function(code) {
   isAMD = false;
   isCMD = false;
 
-  varables = [[]];
-  depth = 0;
-
   var parser = homunculus.getParser('js');
   var node = parser.parse(code);
-  recursion(node);console.log(varables)
+  var global = new Context();
+  recursion(node, global, global);
 };
 
 exports.isCommonJS = function(code) {
@@ -75,82 +102,10 @@ exports.isAMD = function(code) {
   }
   return isAMD;
 };
-//
-//exports.type = function(code) {
-//  var token;
-//  outer:
-//    for(var i = 0, len = tokens.length; i < len; i++) {
-//      token = tokens[i];
-//      if(token.type() == Token.ID) {
-//        if(token.val() == 'define') {
-//          //可能是xxx.define，需忽略，但window.define等类似变量赋值无法做到，需语义分析
-//          var prev = tokens[i-1];
-//          if(prev && prev.val() == '.') {
-//            continue;
-//          }
-//          //define(
-//          token = tokens[++i];
-//          if(token && token.val() != '(') {
-//            continue;
-//          }
-//          //define(id,?
-//          if(token && token.type() == Token.STRING) {
-//            i++;
-//            token = tokens[++i];
-//          }
-//          var depsNum = 0;
-//          //define(id,? deps,?
-//          if(token && token.val() == '[') {
-//            i++;
-//            for(; i < len; i++) {
-//              token = token[i];
-//              if(token.type() == Token.STRING) {
-//                depsNum++;
-//              }
-//              else if(token.val() == ']') {
-//                i += 2;
-//                token = tokens[i];
-//                break;
-//              }
-//            }
-//          }
-//          //define(id,? deps,? factory
-//          if(token) {
-//            if(token.val() == 'function') {
-//              if(depsNum == 0) {
-//                return exports.CMD;
-//              }
-//              //有deps并且factory的形参超出require,module,exports的为AMD
-//              i += 2;
-//              for(; i < len; i++) {
-//                token = tokens[i];
-//                if(token.val() == ',' || ['require', 'exports', 'module'].indexOf(token.val()) > -1) {
-//                  continue;
-//                }
-//                else if(token.type() == Token.ID) {
-//                  return exports.AMD;
-//                }
-//                else {
-//                  return exports.CMD;
-//                }
-//              }
-//            }
-//            else if([Token.ID, Token.STRING, Token.NUMBER, Token.REG, Token.TEMPLATE].indexOf(token.type()) > -1) {
-//              return exports.CMD;
-//            }
-//          }
-//        }
-//        else if(['require', 'exports', 'module'].indexOf(token.val()) > -1) {
-//          //可能是xxx.require，需忽略，但window.require等类似变量赋值无法做到，需语义分析
-//          var prev = tokens[i-1];
-//          if(prev && prev.val() == '.') {
-//            continue;
-//          }
-//          if(tp == exports.UNKNOW) {
-//            tp = exports.COMMONJS;
-//          }
-//        }
-//      }
-//    }
-//  return tp;
-//};
+
+exports.isCMD = function(code) {
+  if(code) {
+    exports.type(code);
+  }
+  return isCMD;
+};

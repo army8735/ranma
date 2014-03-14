@@ -29,7 +29,7 @@
     }
   ],
   "dependencies": {
-    "homunculus": "0.0.2"
+    "homunculus": "0.0.3"
   },
   "main": "./ranma",
   "engines": {
