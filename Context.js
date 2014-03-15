@@ -10,6 +10,8 @@ var Context = Class(function(parent, name) {
   this.variablesMap = {};
   this.params = [];
   this.paramsMap = {};
+  this.aParams = [];
+  this.aParamsMap = {};
   if(!this.isTop()) {
     this.parent.addChild(this);
   }
@@ -32,6 +34,14 @@ var Context = Class(function(parent, name) {
   addParam: function(p) {
     this.paramsMap[p] = this.params.length;
     this.params.push(p);
+    return this;
+  },
+  getAParam: function() {
+    return this.aParams;
+  },
+  addAParam: function(ap) {
+    this.aParamsMap[ap] = this.aParams.length;
+    this.aParams.push(ap);
     return this;
   },
   getChildren: function() {

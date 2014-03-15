@@ -39,23 +39,27 @@ function vardecl(node, context) {
 }
 function fndecl(node, context) {
   var v = node.leaves()[1].leaves().content();
- // context.addVar(v);
   var child = new Context(context, v);
   var params = node.leaves()[3];
-  addParam(params, child);
+  if(params.name() == JsNode.PARAMS) {
+    addParam(params, child);
+  }
   return child;
 }
 function fnexpr(node, context) {
   //函数表达式name为空
   var child = new Context(context, null);
   var params;
-  if(v) {
+  var v = node.leaves()[1];
+  if(v.name() == JsNode.TOKEN) {
     params = node.leaves()[3];
   }
   else {
     params = node.leaves()[2];
   }
-  addParam(params, child);
+  if(params.name() == JsNode.PARAMS) {
+    addParam(params, child);
+  }
   return child;
 }
 function addParam(params, child) {
@@ -83,6 +87,12 @@ exports.type = function(code) {
   var node = parser.parse(code);
   var global = new Context();
   recursion(node, global, global);
+
+  return {
+    'isCommonJS': isCommonJS,
+    'isAMD': isAMD,
+    'isCMD': isCMD
+  };
 };
 
 exports.isCommonJS = function(code) {
