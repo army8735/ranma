@@ -32,26 +32,22 @@ function recursion(node, context, global) {
   }
 }
 function vardecl(node, context) {
-  var v = node.leaves()[0].leaves().content();
-  context.addVar(v);
+  var leaves = node.leaves();
+  var v = leaves[0].leaves().content();
+  var assign = !!leaves[1];
+  context.addVar(v, assign);
 }
 function fndecl(node, context) {
   var v = node.leaves()[1].leaves().content();
-  context.addVar(v);
+ // context.addVar(v);
   var child = new Context(context, v);
   var params = node.leaves()[3];
   addParam(params, child);
   return child;
 }
 function fnexpr(node, context) {
-  var v = node.leaves()[1].leaves().content();
-  if(v == '(') {
-    v = null;
-  }
-  else {
-    context.addVar(v);
-  }
-  var child = new Context(context, v);
+  //函数表达式name为空
+  var child = new Context(context, null);
   var params;
   if(v) {
     params = node.leaves()[3];

@@ -2,8 +2,8 @@ var Class = require('./util/Class');
 var cid = 0;
 var Context = Class(function(parent, name) {
   this.cid = cid++;
-  this.parent = parent;
-  this.name = name;
+  this.parent = parent || null;
+  this.name = name || null;
   this.children = [];
   this.childrenMap = {};
   this.variables = [];
@@ -32,6 +32,7 @@ var Context = Class(function(parent, name) {
   addParam: function(p) {
     this.paramsMap[p] = this.params.length;
     this.params.push(p);
+    return this;
   },
   getChildren: function() {
     return this.children;
@@ -40,27 +41,58 @@ var Context = Class(function(parent, name) {
     return !this.parent;
   },
   hasChild: function(child) {
+    var name = child;
+    if(child instanceof Context) {
+      name = child.getName();
+    }
     return this.childrenMap.hasOwnProperty(child);
   },
   addChild: function(child) {
     var name = child.getName();
-    if(this.hasChild(name)) {
-      this.children.splice(this.childrenMap[name], 1);
-      delete  this.childrenMap[name];
+    //函数表达式名字为空无法删除
+    if(name) {
+      this.delChild(name);
+      this.childrenMap[name] = child;
     }
-    this.childrenMap[name] = this.children.length;
     this.children.push(child);
+    return this;
+  },
+  delChild: function(child) {
+    var name = child;
+    if(child instanceof Context) {
+      name = child.getName();
+    }
+    if(this.hasChild(name)) {
+      var i = this.children.indexOf(this.childrenMap[name]);
+      this.children.splice(i, 1);
+      delete this.childrenMap[name];
+    }
+    return this;
   },
   hasVar: function(v) {
     return this.variablesMap.hasOwnProperty(v);
   },
-  addVar: function(v) {
+  addVar: function(v, assign) {
+    //赋值拥有最高优先级，会覆盖掉之前的函数和var
+    if(assign) {
+      this.delVar(v);
+      this.delChild(v);
+    }
+    //仅仅是var声明无赋值，且已有过声明或函数，忽略之
+    else if(this.hasVar(v) || this.hasChild(v)) {
+      return this;
+    }
+    this.variablesMap[v] = v;
+    this.variables.push(v);
+    return this;
+  },
+  delVar: function(v) {
     if(this.hasVar(v)) {
-      this.variables.splice(this.variablesMap[v], 1);
+      var i = this.variables.indexOf(this.variablesMap[v]);
+      this.variables.splice(i, 1);
       delete this.variablesMap[v];
     }
-    this.variablesMap[v] = this.variables.length;
-    this.variables.push(v);
+    return this;
   },
   getVars: function(noParams) {
     var self = this;
