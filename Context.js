@@ -4,6 +4,7 @@ var Context = Class(function(parent, name) {
   this.cid = cid++;
   this.parent = parent || null;
   this.name = name || null;
+  this.thisIs = null;
   this.children = [];
   this.childrenMap = {};
   this.variables = [];
@@ -14,6 +15,7 @@ var Context = Class(function(parent, name) {
   this.aParamsMap = {};
   if(!this.isTop()) {
     this.parent.addChild(this);
+    this.setThis(this.parent.getThis());
   }
 }).methods({
   getCid: function() {
@@ -24,6 +26,13 @@ var Context = Class(function(parent, name) {
   },
   getParent: function() {
     return this.parent;
+  },
+  getThis: function() {
+    return this.thisIs;
+  },
+  setThis: function(t) {
+    this.thisIs = t;
+    return this;
   },
   hasParam: function(p) {
     return this.paramsMap.hasOwnProperty(p);

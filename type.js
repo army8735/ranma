@@ -60,6 +60,17 @@ function fnexpr(node, context) {
   if(params.name() == JsNode.PARAMS) {
     addParam(params, child);
   }
+  //匿名函数检查形参传入情况
+  var next = node.next();
+  if(next && next.name() == JsNode.ARGS) {
+    var leaves = next.leaves();
+    //长度2为()空参数，长度3有参数
+    if(leaves.length == 3) {
+      leaves[1].leaves().forEach(function(leaf) {
+        //仅检查prmrexpr，即直接字面变量，复杂、表达式、对象属性等运行时忽略
+      });
+    }
+  }
   return child;
 }
 function addParam(params, child) {
