@@ -37,7 +37,7 @@ var Context = Class(function(parent, name) {
   hasParam: function(p) {
     return this.paramsMap.hasOwnProperty(p);
   },
-  getParam: function() {
+  getParams: function() {
     return this.params;
   },
   addParam: function(p) {
@@ -45,11 +45,14 @@ var Context = Class(function(parent, name) {
     this.params.push(p);
     return this;
   },
-  getAParam: function() {
+  getAParams: function() {
     return this.aParams;
   },
   addAParam: function(ap) {
-    this.aParamsMap[ap] = this.aParams.length;
+    //只记录单字面量参数和this，其它传入null占位
+    if(ap) {
+      this.aParamsMap[ap] = this.aParams.length;
+    }
     this.aParams.push(ap);
     return this;
   },

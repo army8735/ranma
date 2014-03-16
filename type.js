@@ -64,10 +64,24 @@ function fnexpr(node, context) {
   var next = node.next();
   if(next && next.name() == JsNode.ARGS) {
     var leaves = next.leaves();
-    //长度2为()空参数，长度3有参数
+    //长度2为()空参数，长度3有参数，第2个节点
     if(leaves.length == 3) {
-      leaves[1].leaves().forEach(function(leaf) {
-        //仅检查prmrexpr，即直接字面变量，复杂、表达式、对象属性等运行时忽略
+      leaves[1].leaves().forEach(function(leaf, i) {
+        if(i % 2 == 0) {
+          //仅检查prmrexpr，即直接字面变量，常量、复杂、表达式、对象属性等运行时忽略，传入null
+          if(leaf.name() == JsNode.PRMREXPR) {
+            var token = leaf.leaves()[0].token();
+            if(token.type() == Token.ID || token.content() == 'this') {
+              child.addAParam(token.content());
+            }
+            else {
+              child.addAParam(null);
+            }
+          }
+          else {
+            child.addAParam(null);
+          }
+        }
       });
     }
   }
