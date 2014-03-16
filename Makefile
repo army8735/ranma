@@ -1,0 +1,2 @@
+test:
+	@mocha tests/

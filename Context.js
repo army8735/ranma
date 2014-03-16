@@ -104,7 +104,7 @@ var Context = Class(function(parent, name) {
     else if(this.hasVar(v) || this.hasChild(v)) {
       return this;
     }
-    this.variablesMap[v] = v;
+    this.variablesMap[v] = true;
     this.variables.push(v);
     return this;
   },
