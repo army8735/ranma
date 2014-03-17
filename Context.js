@@ -13,6 +13,11 @@ var Context = Class(function(parent, name) {
   this.paramsMap = {};
   this.aParams = [];
   this.aParamsMap = {};
+  this.require = false;
+  this.module = false;
+  this.exports = false;
+  this.define = false;
+  this.defineAmd = false;
   if(!this.isTop()) {
     this.parent.addChild(this);
     this.setThis(this.parent.getThis());

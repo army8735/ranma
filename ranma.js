@@ -5,7 +5,7 @@ var type = require('./type');
 exports.type = type;
 
 exports.cjsify = function(code) {
-  var tp = type.type(code);
+  var tp = type.analyse(code);
   if(tp != type.COMMONJS) {
     return cjsify.convert(code, tp);
   }
