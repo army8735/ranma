@@ -9,7 +9,7 @@
     }
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     }
   ],
   "dependencies": {
-    "homunculus": "0.0.4"
+    "homunculus": "0.0.5"
   },
   "main": "./ranma",
   "engines": {
@@ -37,6 +37,7 @@
   },
   "readmeFilename": "README.md",
   "devDependencies": {
-    "expect.js": "^0.3.1"
+    "expect.js": "^0.3.1",
+    "mocha": "^1.18.0"
   }
 }
