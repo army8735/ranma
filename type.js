@@ -6,6 +6,7 @@ var JsNode = homunculus.getClass('node', 'js');
 var isCommonJS;
 var isAMD;
 var isCMD;
+var context;
 
 var Context = require('./Context');
 
@@ -164,6 +165,7 @@ exports.analyse = function(code) {
   isCommonJS = false;
   isAMD = false;
   isCMD = false;
+  context = null;
 
   var parser = homunculus.getParser('js');
   var node = parser.parse(code);
@@ -171,11 +173,13 @@ exports.analyse = function(code) {
   recursion(node, global, global);
 
   analyse(global);
+  context = global;
 
   return {
     'isCommonJS': isCommonJS,
     'isAMD': isAMD,
-    'isCMD': isCMD
+    'isCMD': isCMD,
+    'context': context
   };
 };
 
@@ -199,3 +203,10 @@ exports.isCMD = function(code) {
   }
   return isCMD;
 };
+
+exports.context = function(code) {
+  if(code) {
+    exports.analyse(code);
+  }
+  return context;
+}
