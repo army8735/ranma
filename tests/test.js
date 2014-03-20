@@ -15,7 +15,7 @@ describe('jslib test', function() {
     });
     it('cjsify', function() {
       var res = ranma.cjsify(s);
-      expect(res).to.eql(res);
+      expect(res).to.eql(s);
     });
   });
   describe('expect', function() {
@@ -28,7 +28,7 @@ describe('jslib test', function() {
     });
     it('cjsify', function() {
       var res = ranma.cjsify(s);
-      expect(res).to.eql(res);
+      expect(res).to.eql(s);
     });
   });
   describe('handlebars', function() {
@@ -52,6 +52,10 @@ describe('jslib test', function() {
       expect(type.isCommonJS).to.eql(true);
       expect(type.isAMD).to.eql(true);
       expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+      expect(res).to.eql(s);
     });
   });
 });

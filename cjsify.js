@@ -1,12 +1,11 @@
-var Context = require('./Context');
 var type = require('./type');
 
 var fs = require('fs');
 var define = fs.readFileSync('./template/define.js');
 var defineAmd = define + 'define.amd = true;';
 
-exports.convert = function(code) {
-  var tp = type.analyse(code);
+exports.convert = function(code, tp) {
+  tp = tp || type.analyse(code);
   if(tp.isCommonJS) {
     return code;
   }
@@ -23,7 +22,7 @@ exports.convert = function(code) {
     if(gVars.length == 0) {
       return code + ';module.exports = null;'
     }
-    else if(gVars.length == 1) {console.log(gVars)
+    else if(gVars.length == 1) {
       return code + ';module.exports = ' + gVars[0] + ';';
     }
     else {

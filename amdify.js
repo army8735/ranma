@@ -1,19 +1,18 @@
 var type = require('./type');
-var cjsify = require('./cjsify');
+var cmdify = require('./cmdify');
 
 exports.convert = function(code, tp) {
   tp = tp || type.analyse(code);
   if(tp.isAMD) {
-    var context = tp.context;
     return code;
   }
   else if(tp.isCMD) {
     return code;
   }
   else if(tp.isCommonJS) {
-    return 'define(function(require, exports, module) {' + code + '});';
+    return cmdify.convert(code, tp);
   }
   else {
-    return 'define(function(require, exports, module) {' + cjsify.convert(code, tp) + '});';
+    return cmdify.convert(code, tp);
   }
 };
