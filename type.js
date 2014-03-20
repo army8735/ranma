@@ -142,16 +142,16 @@ function addAParam(params, child) {
 }
 
 function analyse(context) {
-  if(!isCommonJS && context.require && !isDeclared('require', context) && !isChild('require', context) && !isParam('require', context)) {
+  if(!isCommonJS && context.require && !isExist('require', context)) {
     isCommonJS = true;
   }
-  if(!isCommonJS && context.module && !isDeclared('module', context) && !isChild('module', context) && !isParam('module', context)) {
+  if(!isCommonJS && context.module && !isExist('module', context)) {
     isCommonJS = true;
   }
-  if(!isCommonJS && context.exports && !isDeclared('exports', context) && !isChild('exports', context) && !isParam('exports', context)) {
+  if(!isCommonJS && context.exports && !isExist('exports', context)) {
     isCommonJS = true;
   }
-  if(!isAMD && context.define && context.defineAmd && !isDeclared('define', context) && !isChild('define', context) && !isParam('define', context)) {
+  if(!isAMD && context.define && context.defineAmd && !isExist('define', context)) {
     isAMD = true;
   }
   if(!isCMD && !isAMD && context.define && !isDeclared('define', context) && !isChild('define', context) && !isParam('define', context)) {
@@ -162,9 +162,34 @@ function analyse(context) {
   });
 }
 
+//检测的缓存
+var cache = {};
+function hasCache(v, context, type) {
+  cache[type] = cache[type] || {};
+  var id = context.getCid();
+  return cache[type][id + v] !== undefined;
+}
+function getCache(v, context, type) {
+  cache[type] = cache[type] || {};
+  var id = context.getCid();
+  return cache[type][id + v];
+}
+function setCache(v, context, type, val) {
+  cache[type] = cache[type] || {};
+  var id = context.getCid();
+  cache[type][id + v] = val;
+}
+//检测变量是否存在
+function isExist(v, context) {
+  return isDeclared(v, context) || isChild(v, context) || isParam(v, context);
+}
 //检测变量在当前上下文中是否是声明，需递归向上
 function isDeclared(v, context) {
+  if(hasCache(v, context, 'var')) {
+    return getCache(v, context, 'var');
+  }
   var res = context.hasVar(v);
+  setCache(v, context, 'var', res);
   var p = context.getParent();
   if(res) {
     return true;
@@ -174,14 +199,29 @@ function isDeclared(v, context) {
   }
   return res;
 }
-//检测变量在当前上下文中是否是函数名，不需递归向上
+//检测变量在当前上下文中是否是函数名，需递归向上
 function isChild(v, context) {
+  if(hasCache(v, context, 'child')) {
+    return getCache(v, context, 'child');
+  }
   var res = context.hasChild(v);
+  setCache(v, context, 'child', res);
+  var p = context.getParent();
+  if(res) {
+    return true;
+  }
+  else if(p) {
+    return isChild(v, p);
+  }
   return res;
 }
 //检测变量在当前上下文中是否是形参，需递归向上
 function isParam(v, context) {
+  if(hasCache(v, context, 'param')) {
+    return getCache(v, context, 'param');
+  }
   var res = context.hasParam(v);
+  setCache(v, context, 'param', res);
   var p = context.getParent();
   if(res) {
     return true;
