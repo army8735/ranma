@@ -17,6 +17,7 @@ function recursion(node, context, global) {
     if(!isVirtual) {
       var token = node.token();
       var s = token.content();
+      //4个需记录的变量需判断是否是独立的PRMREXPR，否则忽略之（如a.require为MMBEXPR的后缀）
       if(['require', 'module', 'exports', 'define'].indexOf(s) > -1) {
         var parent = node.parent();
         if(parent && parent.name() == JsNode.PRMREXPR) {
@@ -141,24 +142,54 @@ function addAParam(params, child) {
 }
 
 function analyse(context) {
-  if(!isCommonJS && context.require && !context.getVars(true)['require'] && !context.getChildren()['require']) {
+  if(!isCommonJS && context.require && !isDeclared('require', context) && !isChild('require', context) && !isParam('require', context)) {
     isCommonJS = true;
   }
-  if(!isCommonJS && context.module && !context.getVars(true)['module'] && !context.getChildren()['module']) {
+  if(!isCommonJS && context.module && !isDeclared('module', context) && !isChild('module', context) && !isParam('module', context)) {
     isCommonJS = true;
   }
-  if(!isCommonJS && context.exports && !context.getVars(true)['exports'] && !context.getChildren()['exports']) {
+  if(!isCommonJS && context.exports && !isDeclared('exports', context) && !isChild('exports', context) && !isParam('exports', context)) {
     isCommonJS = true;
   }
-  if(!isAMD && context.define && context.defineAmd && !context.getVars(true)['define'] && !context.getChildren()['define']) {
+  if(!isAMD && context.define && context.defineAmd && !isDeclared('define', context) && !isChild('define', context) && !isParam('define', context)) {
     isAMD = true;
   }
-  if(!isCMD && !isAMD && context.define && !context.getVars(true)['define'] && !context.getChildren()['define']) {
+  if(!isCMD && !isAMD && context.define && !isDeclared('define', context) && !isChild('define', context) && !isParam('define', context)) {
     isCMD = true;
   }
   context.getChildren().forEach(function(child) {
     analyse(child);
   });
+}
+
+//检测变量在当前上下文中是否是声明，需递归向上
+function isDeclared(v, context) {
+  var res = context.hasVar(v);
+  var p = context.getParent();
+  if(res) {
+    return true;
+  }
+  else if(p) {
+    return isDeclared(v, p);
+  }
+  return res;
+}
+//检测变量在当前上下文中是否是函数名，不需递归向上
+function isChild(v, context) {
+  var res = context.hasChild(v);
+  return res;
+}
+//检测变量在当前上下文中是否是形参，需递归向上
+function isParam(v, context) {
+  var res = context.hasParam(v);
+  var p = context.getParent();
+  if(res) {
+    return true;
+  }
+  else if(p) {
+    return isParam(v, p);
+  }
+  return res;
 }
 
 exports.analyse = function(code) {

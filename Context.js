@@ -2,18 +2,18 @@ var Class = require('./util/Class');
 var cid = 0;
 var Context = Class(function(parent, name) {
   this.cid = cid++;
-  this.parent = parent || null;
-  this.name = name || null;
-  this.thisIs = null;
-  this.children = [];
+  this.parent = parent || null; //父上下文，如果是全局则为空
+  this.name = name || null; //上下文名称，即函数名，函数表达式为空，全局也为空
+  this.thisIs = null; //上下文环境中this的值，函数表达式中可能会赋值
+  this.children = []; //函数声明或函数表达式所产生的上下文
   this.childrenMap = {};
-  this.variables = [];
+  this.variables = []; //变量var声明
   this.variablesMap = {};
-  this.params = [];
+  this.params = []; //形参，函数上下文才有，即全局无
   this.paramsMap = {};
-  this.aParams = [];
+  this.aParams = []; //实参，函数表达式才有
   this.aParamsMap = {};
-  this.require = false;
+  this.require = false; //当前上下文中是否使用了这些变量，以此判断规范类型（需参照上下文中是否有过声明）
   this.module = false;
   this.exports = false;
   this.define = false;
@@ -39,6 +39,12 @@ var Context = Class(function(parent, name) {
     this.thisIs = t;
     return this;
   },
+  isTop: function() {
+    return !this.parent;
+  },
+  isFnexpr: function() {
+    return !this.isTop() && !this.name;
+  },
   hasParam: function(p) {
     return this.paramsMap.hasOwnProperty(p);
   },
@@ -46,6 +52,7 @@ var Context = Class(function(parent, name) {
     return this.params;
   },
   addParam: function(p) {
+    //形参不可能重复，无需判断
     this.paramsMap[p] = this.params.length;
     this.params.push(p);
     return this;
@@ -55,7 +62,7 @@ var Context = Class(function(parent, name) {
   },
   addAParam: function(ap) {
     //只记录单字面量参数和this，其它传入null占位
-    if(ap) {
+    if(ap !== null) {
       this.aParamsMap[ap] = this.aParams.length;
     }
     this.aParams.push(ap);
@@ -64,15 +71,9 @@ var Context = Class(function(parent, name) {
   getChildren: function() {
     return this.children;
   },
-  isTop: function() {
-    return !this.parent;
-  },
-  hasChild: function(child) {
-    var name = child;
-    if(child instanceof Context) {
-      name = child.getName();
-    }
-    return this.childrenMap.hasOwnProperty(child);
+  //仅支持有name的函数声明，表达式无法查找
+  hasChild: function(name) {
+    return this.childrenMap.hasOwnProperty(name);
   },
   addChild: function(child) {
     var name = child.getName();
@@ -84,11 +85,8 @@ var Context = Class(function(parent, name) {
     this.children.push(child);
     return this;
   },
-  delChild: function(child) {
-    var name = child;
-    if(child instanceof Context) {
-      name = child.getName();
-    }
+  //仅支持有name的函数声明，表达式无法删除
+  delChild: function(name) {
     if(this.hasChild(name)) {
       var i = this.children.indexOf(this.childrenMap[name]);
       this.children.splice(i, 1);
@@ -100,7 +98,7 @@ var Context = Class(function(parent, name) {
     return this.variablesMap.hasOwnProperty(v);
   },
   addVar: function(v, assign) {
-    //赋值拥有最高优先级，会覆盖掉之前的函数和var
+    //赋值拥有最高优先级，会覆盖掉之前的函数声明和var
     if(assign) {
       this.delVar(v);
       this.delChild(v);
@@ -121,14 +119,8 @@ var Context = Class(function(parent, name) {
     }
     return this;
   },
-  getVars: function(noParams) {
-    var self = this;
-    if(noParams) {
-      var arr = self.variables.filter(function(v) {
-        return !self.hasParam(v);
-      });
-    }
-    return self.variables;
+  getVars: function() {
+    return this.variables;
   }
 });
 module.exports = Context;

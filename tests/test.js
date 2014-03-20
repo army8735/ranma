@@ -57,5 +57,12 @@ describe('jslib test', function() {
       var res = ranma.cjsify(s);
       expect(res).to.eql(s);
     });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+      expect(res).to.eql(s);
+    });
+    it('cmdify', function() {
+      var res = ranma.cmdify(s);
+    });
   });
 });
