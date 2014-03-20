@@ -154,7 +154,7 @@ function analyse(context) {
   if(!isAMD && context.define && context.defineAmd && !isExist('define', context)) {
     isAMD = true;
   }
-  if(!isCMD && !isAMD && context.define && !isDeclared('define', context) && !isChild('define', context) && !isParam('define', context)) {
+  if(!isCMD && !isAMD && context.define && !isExist('define', context)) {
     isCMD = true;
   }
   context.getChildren().forEach(function(child) {
