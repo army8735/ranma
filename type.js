@@ -23,6 +23,8 @@ function recursion(node, context, global) {
         if(parent && parent.name() == JsNode.PRMREXPR) {
           context[s] = parent;
           if(s == 'define') {
+            context[s] = false;
+            //define.amd判断是amd
             var next = parent.next();
             if(next && next.name() == JsNode.TOKEN && next.token().content() == '.') {
               next = next.next();
@@ -30,8 +32,16 @@ function recursion(node, context, global) {
                 context.defineAmd = parent;
               }
             }
+            //define(判断是xmd
+            if(parent.parent().name() == JsNode.CALLEXPR) {
+              context[s] = parent;
+            }
           }
         }
+      }
+      //记录return语句
+      else if(s == 'return') {
+        context.addReturn(token);
       }
     }
   }
@@ -68,6 +78,18 @@ function fndecl(node, context) {
 function fnexpr(node, context) {
   //函数表达式name为空
   var child = new Context(context, null);
+  //如果是define(的factory记录之
+  var parent = node.parent();
+  if(parent.name() == JsNode.ARGLIST) {
+    parent = parent.parent();
+    if(parent.name() == JsNode.ARGS) {
+      var prev = parent.prev();
+      if(prev && prev.name() == JsNode.PRMREXPR && prev.leaves()[0].token().content() == 'define') {
+        context.defineFactory = child;
+      }
+    }
+  }
+  //记录形参
   var params;
   var v = node.leaves()[1];
   if(v.name() == JsNode.TOKEN) {
@@ -79,7 +101,7 @@ function fnexpr(node, context) {
   if(params.name() == JsNode.PARAMS) {
     addParam(params, child);
   }
-  //匿名函数检查形参传入情况
+  //匿名函数检查实参传入情况
   var next = node.next();
   //!function(){}()形式
   if(next && next.name() == JsNode.ARGS) {
@@ -142,13 +164,13 @@ function addAParam(params, child) {
 }
 
 function analyse(context) {
-  if(!isCommonJS && context.require && !isExist('require', context)) {
+  if(!isCommonJS && context.require && !isExist('require', context) && !inDefine(context.module)) {
     isCommonJS = true;
   }
-  if(!isCommonJS && context.module && !isExist('module', context)) {
+  if(!isCommonJS && context.module && !isExist('module', context) && !inDefine(context.module)) {
     isCommonJS = true;
   }
-  if(!isCommonJS && context.exports && !isExist('exports', context)) {
+  if(!isCommonJS && context.exports && !isExist('exports', context) && !inDefine(context.module)) {
     isCommonJS = true;
   }
   if(!isAMD && context.define && context.defineAmd && !isExist('define', context)) {
@@ -231,6 +253,18 @@ function isParam(v, context) {
   }
   return res;
 }
+//检测require，module和exports是否出现在define(中
+function inDefine(token) {
+  while(token = token.parent()) {
+    if(token.name() == JsNode.CALLEXPR) {
+      var id = token.leaves()[0].leaves()[0];
+      if(id.name() == JsNode.TOKEN && id.token().content() == 'define') {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 exports.analyse = function(code) {
   isCommonJS = false;
@@ -273,18 +307,4 @@ exports.isCMD = function(code) {
     exports.analyse(code);
   }
   return isCMD;
-};
-
-exports.context = function(code) {
-  if(code) {
-    exports.analyse(code);
-  }
-  return context;
-};
-
-exports.ast = function(code) {
-  if(code) {
-    exports.analyse(code);
-  }
-  return ast;
 };

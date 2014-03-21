@@ -13,11 +13,13 @@ var Context = Class(function(parent, name) {
   this.paramsMap = {};
   this.aParams = []; //实参，函数表达式才有
   this.aParamsMap = {};
-  this.require = false; //当前上下文中是否使用了这些变量，以此判断规范类型（需参照上下文中是否有过声明）
+  this.returns = []; //return语句
+  this.require = false; //当前上下文中是否使用了这些变量，以此判断规范类型（需参照上下文中是否有过声明），保存它们的token引用
   this.module = false;
   this.exports = false;
   this.define = false;
   this.defineAmd = false;
+  this.defineFactory = null; //保存factory的上下文
   if(!this.isTop()) {
     this.parent.addChild(this);
     this.setThis(this.parent.getThis());
@@ -121,6 +123,13 @@ var Context = Class(function(parent, name) {
   },
   getVars: function() {
     return this.variables;
+  },
+  addReturn: function(v) {
+    this.returns.push(v);
+    return this;
+  },
+  getReturns: function() {
+    return this.returns;
   }
 });
 module.exports = Context;
