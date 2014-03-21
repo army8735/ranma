@@ -1,5 +1,4 @@
 var homunculus = require('homunculus');
-
 var Token = homunculus.getClass('token');
 var JsNode = homunculus.getClass('node', 'js');
 
@@ -7,6 +6,7 @@ var isCommonJS;
 var isAMD;
 var isCMD;
 var context;
+var ast;
 
 var Context = require('./Context');
 
@@ -21,13 +21,13 @@ function recursion(node, context, global) {
       if(['require', 'module', 'exports', 'define'].indexOf(s) > -1) {
         var parent = node.parent();
         if(parent && parent.name() == JsNode.PRMREXPR) {
-          context[s] = true;
+          context[s] = parent;
           if(s == 'define') {
             var next = parent.next();
             if(next && next.name() == JsNode.TOKEN && next.token().content() == '.') {
               next = next.next();
               if(next && next.name() == JsNode.TOKEN && next.token().content() == 'amd') {
-                context.defineAmd = true;
+                context.defineAmd = parent;
               }
             }
           }
@@ -236,21 +236,21 @@ exports.analyse = function(code) {
   isCommonJS = false;
   isAMD = false;
   isCMD = false;
-  context = null;
 
   var parser = homunculus.getParser('js');
-  var node = parser.parse(code);
-  var global = new Context();
-  recursion(node, global, global);
-
-  analyse(global);
-  context = global;
+  ast = parser.parse(code);
+  context = new Context();
+  //根据ast生成上下文
+  recursion(ast, context, context);
+  //分析上下文
+  analyse(context);
 
   return {
     'isCommonJS': isCommonJS,
     'isAMD': isAMD,
     'isCMD': isCMD,
-    'context': context
+    'context': context,
+    'ast': ast
   };
 };
 
@@ -280,4 +280,11 @@ exports.context = function(code) {
     exports.analyse(code);
   }
   return context;
-}
+};
+
+exports.ast = function(code) {
+  if(code) {
+    exports.analyse(code);
+  }
+  return ast;
+};

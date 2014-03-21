@@ -9,9 +9,6 @@ exports.convert = function(code, tp) {
   else if(tp.isCMD) {
     return code;
   }
-  else if(tp.isCommonJS) {
-    return cmdify.convert(code, tp);
-  }
   else {
     return cmdify.convert(code, tp);
   }

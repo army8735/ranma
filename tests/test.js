@@ -41,7 +41,7 @@ describe('jslib test', function() {
     });
     it('cjsify', function() {
       var res = ranma.cjsify(s);
-      var cjsify = fs.readFileSync(path.join(__dirname, './dist/handlebars-cjsify.js'), { encoding: 'utf-8' });
+      var cjsify = fs.readFileSync(path.join(__dirname, './cjs/handlebars.js'), { encoding: 'utf-8' });
       expect(res).to.eql(cjsify);
     });
   });
@@ -63,6 +63,8 @@ describe('jslib test', function() {
     });
     it('cmdify', function() {
       var res = ranma.cmdify(s);
+      var cmdify = fs.readFileSync(path.join(__dirname, './cmd/Uri.js'), { encoding: 'utf-8' });
+      expect(res).to.eql(cmdify);
     });
   });
 });
