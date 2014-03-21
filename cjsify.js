@@ -17,7 +17,14 @@ exports.convert = function(code, tp) {
   }
   else {
     var context = tp.context;
-    var gVars = context.getVars(true);
+    //全局变量，包括全局函数
+    var gVars = context.getVars();
+    var gChildren = context.getChildren();
+    gChildren.forEach(function(child) {
+      if(child.getName()) {
+        gVars.push(child.getName());
+      }
+    });
     //没有全局变量赋值null，只有一个则直接赋给module.exports；否则将变量名作为key加上值组成hash赋给exports
     if(gVars.length == 0) {
       return code + ';module.exports = null;'
