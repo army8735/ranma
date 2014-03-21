@@ -22,14 +22,9 @@
     "cmd"
   ],
   "author": "army8735",
-  "license": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/addyosmani/es6-module-loader/blob/master/LICENSE-MIT"
-    }
-  ],
+  "license": "MIT",
   "dependencies": {
-    "homunculus": "0.0.7"
+    "homunculus": "0.0.8"
   },
   "main": "./ranma",
   "engines": {
