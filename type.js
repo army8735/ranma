@@ -55,6 +55,9 @@ function recursion(node, context, global) {
     else if(node.name() == JsNode.FNEXPR) {
       context = fnexpr(node, context);
     }
+    else if(node.name() == JsNode.PRMREXPR) {
+      prmrexpr(node, context);
+    }
     node.leaves().forEach(function(leaf, i) {
       recursion(leaf, context, global);
     });
@@ -161,6 +164,9 @@ function addAParam(params, child) {
       }
     }
   });
+}
+function prmrexpr(node, context) {
+
 }
 
 function analyse(context) {

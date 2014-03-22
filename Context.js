@@ -1,19 +1,22 @@
 var Class = require('./util/Class');
 var cid = 0;
+//TODO 放到homunculus里
 var Context = Class(function(parent, name) {
   this.cid = cid++;
   this.parent = parent || null; //父上下文，如果是全局则为空
   this.name = name || null; //上下文名称，即函数名，函数表达式为空，全局也为空
   this.thisIs = null; //上下文环境中this的值，函数表达式中可能会赋值
   this.children = []; //函数声明或函数表达式所产生的上下文
-  this.childrenMap = {};
+  this.childrenMap = {}; //键是函数名，值是对应的node
   this.variables = []; //变量var声明
   this.variablesMap = {};
   this.params = []; //形参，函数上下文才有，即全局无
   this.paramsMap = {};
   this.aParams = []; //实参，函数表达式才有
   this.aParamsMap = {};
-  this.returns = []; //return语句
+  this.vids = []; //上下文环境里用到的变量id
+  this.vidsMap = {}; //键为id字面量，值是它的token
+  this.returns = []; //上下文环境里return语句
   this.require = false; //当前上下文中是否使用了这些变量，以此判断规范类型（需参照上下文中是否有过声明），保存它们的token引用
   this.module = false;
   this.exports = false;
@@ -130,6 +133,21 @@ var Context = Class(function(parent, name) {
   },
   getReturns: function() {
     return this.returns;
+  },
+  hasVid: function(v) {
+    return this.vidsMap.hasOwnProperty(v);
+  },
+  addVid: function(token) {
+    var content = token.content();
+    if(this.vidsMap.hasOwnProperty(content)) {
+      return;
+    }
+    this.vids.push(token);
+    this.vidsMap[content] = token;
+    return this;
+  },
+  getVids: function() {
+    return this.vids;
   }
 });
 module.exports = Context;
