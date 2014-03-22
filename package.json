@@ -24,7 +24,7 @@
   "author": "army8735",
   "license": "MIT",
   "dependencies": {
-    "homunculus": "0.0.8"
+    "homunculus": "0.0.9"
   },
   "main": "./ranma",
   "engines": {
