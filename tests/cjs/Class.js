@@ -1,4 +1,4 @@
-unction() {
+
   function inheritPrototype(subType, superType) {
     var prototype = Object.create(superType.prototype);
     prototype.constructor = subType;
@@ -33,3 +33,4 @@ unction() {
   }
   klass.extend = inheritPrototype;
   module.exports = klass;
+;

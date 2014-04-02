@@ -1,2 +1,2 @@
 test:
-	@mocha tests/
+	@mocha tests/ -R spec

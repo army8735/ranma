@@ -1,111 +1,12 @@
 var type = require('./type');
+var cmdify = require('./cmdify');
 
 var homunculus = require('homunculus');
 var JsNode = homunculus.getClass('node', 'js');
 var Token = homunculus.getClass('token');
 
-function removeAmd(context) {
-  if(context.defineAmd) {
-    var parent = context.defineAmd;
-    while(parent = parent.parent()) {
-      if(parent.name() == JsNode.IFSTMT) {
-        //将判断define.amd的if语句的全部token的sIndex依次放入数组，取首尾即得区间
-        var arr = [];
-        pushToken(parent, arr);
-        return [arr[0], arr[arr.length - 1]];
-      }
-    }
-  }
-  else {
-    var index;
-    context.getChildren().forEach(function(child) {
-      index = index || removeAmd(child);
-    });
-    return index;
-  }
-}
-function removeDefine(context) {
-  if(context.define) {
-    var parent = context.define.parent();
-    //将判断define(的callexpr的全部token的sIndex依次放入数组，取首尾即得区间
-    var arr = [];
-    pushToken(parent, arr);
-    return [arr[0], arr[arr.length - 1]];
-  }
-  else {
-    var index;
-    context.getChildren().forEach(function(child) {
-      index = index || removeDefine(child);
-    });
-    return index;
-  }
-}
-//提取出define(..factory)，只判断第一个出现的，不支持多define
-function getFactory(context) {
-  if(context.define) {
-    var args = context.define.next().leaves()[1].leaves();
-    var factory = args[args.length - 1];
-    //将factory的全部token的sIndex依次放入数组，取首尾即得区间
-    var arr = [];
-    pushToken(factory, arr);
-    var deps = [];
-    var params = [];
-    var isFn = factory.name() == JsNode.FNEXPR;
-    //提取依赖文本
-    if(args.length > 1) {
-      var node = args[args.length - 3];
-      if(node.name() == JsNode.ARRLTR) {
-        node.leaves().forEach(function(param, i) {
-          if(i % 2 == 1) {
-            deps.push({
-              v: param.leaves()[0].token().content()
-            });
-          }
-        });
-      }
-      //提取factory的依赖变量
-      if(isFn) {
-        node = factory.leaves()[2];
-        if(node.name() == JsNode.TOKEN && node.token().content() == '(') {
-          node = node.next();
-        }
-        if(node.name() == JsNode.FNPARAMS) {
-          node.leaves().forEach(function(param, i) {
-            if(i % 2 == 0) {
-              params.push(param.token().content());
-            }
-          });
-        }
-      }
-    }
-    //如果是fn提取block区间
-    var blockStart, blockEnd;
-    if(isFn) {
-      var leaves = factory.leaves();
-      blockStart = leaves[0].token().sIndex(); //todo
-      blockEnd = leaves[leaves.length - 1].token().sIndex();
-    }
-    return {
-      start: arr[0],
-      end: arr[arr.length - 1],
-      context: context.defineFactory,
-      factory: factory,
-      deps: deps,
-      params: params,
-      isFn: isFn,
-      blockStart: blockStart,
-      blockEnd: blockEnd
-    };
-  }
-  else {
-    var res;
-    context.getChildren().forEach(function(child) {
-      res = res || getFactory(child);
-    });
-    return res;
-  }
-}
 function pushToken(node, arr) {
+  arr = arr || [];
   var isToken = node.name() == JsNode.TOKEN;
   var isVirtual = isToken && node.token().type() == Token.VIRTUAL;
   if(isToken) {
@@ -120,42 +21,100 @@ function pushToken(node, arr) {
       pushToken(leaf, arr);
     });
   }
+  return arr;
 }
-function hasExports(context) {
-  return context.module || context.exports;
+
+//获取define(factory)的节点
+function getDefineAndFactory(context) {
+  if(context.hasVid('define')) {
+    var define = context.getVid('define');
+    for(var i = 0; i < define.length; i++) {
+      var par = define[i].parent();
+      if(par
+        && par.next()
+        && par.next().name() == JsNode.ARGS) {
+        var factory = par.next().leaves()[1].leaves().slice(-1)[0];
+        var deps = null;
+        if(factory.prev()
+          && factory.prev().prev()
+          && factory.prev().prev().name() == JsNode.PRMREXPR
+          && factory.prev().prev().leaves()[0].name() == JsNode.ARRLTR) {
+          deps = factory.prev().prev().leaves()[0];
+        }
+        return {
+          'define': define[i],
+          'deps': deps,
+          'factory': factory,
+          'context': context
+        };
+      }
+    }
+  }
+  else {
+    var res;
+    context.getChildren().forEach(function(child) {
+      res = res || getDefineAndFactory(child);
+    });
+    return res;
+  }
 }
 
 exports.convert = function(code, tp) {
   tp = tp || type.analyse(code);
   if(tp.isCommonJS) {
     return code;
-  }//todo
-  else if(tp.isAMD) {
-    var context = tp.context;
-    var index = getFactory(context);
-    var factory = code.slice(index[0], index[1]);
-    //函数形式的factory将其改写为执行
-    if(/^function\b/.test(factory)) {
-      factory = '(' + factory + ')()';
-    }
-    var amdIndex = removeAmd(context);
-    return code.slice(0, amdIndex[0]) + 'module.exports = ' + factory + ';' + code.slice(amdIndex[1]);
   }
-  else if(tp.isCMD) {
-    var context = tp.context;
-    var factory = getFactory(context);
-    //factory不是函数时，直接将对象赋给exports
-    if(!factory.isFn) {
-      return 'module.expors = ' + code.slice(factory.start, factory.end);
+  //todo 对define的if判断语句移除
+  else if(tp.isAMD) {
+    var res = cmdify.convert(code, tp);
+    return exports.convert(res);
+  }
+  else if(tp.isAMD || tp.isCMD) {
+    if(tp.isAMD) {
+      code = cmdify.convert(code, tp);
     }
-    //当factory有exports时直接返回
-    if(hasExports(factory.context)) {
-      return code.slice(factory.blockStart + 1, factory.blockEnd);
-    }//todo
-    //没有将可能存在的return改写为exports
-    var rets = getReturns();
-    index = removeDefine(context);
-    return code.slice(0, index[0]) + 'module.exports = ' + factory + ';' + code.slice(index[1]);
+    var context = tp.context;
+    var defFact = getDefineAndFactory(context);
+    var defBlock = pushToken(defFact.define.parent().parent());
+    var facBlock = pushToken(defFact.factory);
+    //将factory代码提取出来，删除define语句
+    //factory为函数时，将return语句改为module.exports
+    if(defFact.factory.name() == JsNode.FNEXPR) {
+      var fnbody = defFact.factory.leaves().slice(-2)[0];
+      var blockStart = fnbody.prev();
+      var blockEnd = fnbody.next();
+      var fac = code.slice(blockStart.token().sIndex() + 1, blockEnd.token().sIndex());
+      //遍历子上下文，找到属于factory的那个，从而找到return语句
+      var children = defFact.context.getChildren();
+      for(var i = 0; i < children.length; i++) {
+        var ctx = children[i];
+        if(ctx.isFnexpr() && ctx.getNode() == defFact.factory) {
+          var rets = ctx.getReturns();
+          if(rets.length) {
+            var index = blockStart.token().sIndex() + 1;
+            //倒序删除return语句并添加module.exports
+            rets.reverse().forEach(function(ret) {
+              var token = ret.token();
+              var v = ret.next();
+              var s = 'module.exports =' + ((v.name() == JsNode.TOKEN) ? 'null' : '');
+                fac = fac.slice(0, token.sIndex() - index)
+                  + s
+                  + fac.slice(token.sIndex() - index + token.content().length);
+            });
+          }
+          break;
+        }
+      }
+      return code.slice(0, defBlock[0])
+        + fac
+        + code.slice(defBlock[defBlock.length - 1]);
+    }
+    //factory为非函数时，直接添加module.exports
+    //TODO 也可能为传入的函数引用变量，暂且不考虑
+    return code.slice(0, defBlock[0])
+      + 'module.exports = '
+      + code.slice(facBlock[0], facBlock[facBlock.length - 1])
+      + code.slice(defBlock[defBlock.length - 1]);
   }
   else {
     var context = tp.context;
