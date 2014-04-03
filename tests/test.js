@@ -139,6 +139,22 @@ describe('simple test', function() {
       var res = ranma.cjsify('if(typeof define !== "undefined" && define.amd){define(function(){return 1;})}');
       expect(res).to.eql('module.exports = 1;');
     });
+    it('normal js with var', function() {
+      var res = ranma.cjsify('var a = 1;');
+      expect(res).to.eql('var a = 1;;module.exports = a;')
+    });
+    it('normal js with function', function() {
+      var res = ranma.cjsify('function a(){}');
+      expect(res).to.eql('function a(){};module.exports = a;')
+    });
+    it('normal js with deps', function() {
+      var res = ranma.cjsify('var a = b;');
+      expect(res).to.eql('var b = require("b");var a = b;;module.exports = a;');
+    });
+    it('normal js with multi global vars', function() {
+      var res = ranma.cjsify('var a = b, c = d;');
+      expect(res).to.eql('var b = require("b");var d = require("d");var a = b, c = d;;exports["a"] = a;exports["c"] = c;');
+    });
   });
   describe('cmdify', function() {
     it('define.amd', function() {

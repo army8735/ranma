@@ -135,26 +135,38 @@ exports.convert = function(code, tp) {
     //TODO 直接使用的未定义变量如jQuery作为依赖
     var context = tp.context;
     //全局变量，包括全局函数
-    var gVars = context.getVars();
+    var gVars = context.getVars().map(function(v) {
+      return v.leaves()[0].token().content();
+    });
     var gChildren = context.getChildren();
     gChildren.forEach(function(child) {
       if(child.getName()) {
         gVars.push(child.getName());
       }
     });
+    //全局使用的未声明的变量
+    var reqs = context.getVids().map(function(v) {
+      return v.token().content();
+    }).filter(function(v) {
+      return !context.hasVar(v) && !context.hasChild(v);
+    });
+    var requires = '';
+    reqs.forEach(function(req) {
+      requires += 'var ' + req + ' = require("' + req + '");';
+    });
     //没有全局变量赋值null，只有一个则直接赋给module.exports；否则将变量名作为key加上值组成hash赋给exports
     if(gVars.length == 0) {
-      return code + ';module.exports = null;'
+      return requires + code;
     }
     else if(gVars.length == 1) {
-      return code + ';module.exports = ' + gVars[0].leaves()[0].token().content() + ';';
+      return requires + code + ';module.exports = ' + gVars[0] + ';';
     }
     else {
-      var res = code + ';';
+      var res = requires + code + ';';
       gVars.forEach(function(v) {
-        v = v.leaves()[0].token().content();
-        res += 'exports["' + v + '"] = ' + 'v;';
+        res += 'exports["' + v + '"] = ' + v + ';';
       });
+      return res;
     }
   }
 };
