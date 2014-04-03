@@ -11,6 +11,16 @@
   "scripts": {
     "test": "make test"
   },
+  "config": {
+    "blanket": {
+      "pattern": ["amdify.js",
+        "cmdify.js",
+        "cjsify.js",
+        "ranma.js",
+        "type.js",
+        "exist.js"]
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/army8735/ranma.git"
@@ -33,6 +43,9 @@
   "readmeFilename": "README.md",
   "devDependencies": {
     "expect.js": "^0.3.1",
-    "mocha": "^1.18.0"
+    "mocha": "^1.18.2",
+    "blanket": "^1.1.6",
+    "coveralls": "^2.10.0",
+    "mocha-lcov-reporter": "0.0.1"
   }
 }

@@ -96,6 +96,15 @@ describe('simple test', function() {
       expect(type.isAMD).to.not.ok();
       expect(type.isCMD).to.ok();
     });
+    it('#isCommonJs', function() {
+      expect(ranma.type.isCommonJS('exports.a = 1;')).to.be.ok();
+    });
+    it('#isAMD', function() {
+      expect(ranma.type.isAMD('if(typeof define !== "undefined" && define.amd){define({})}')).to.be.ok();
+    });
+    it('#isCMD', function() {
+      expect(ranma.type.isCMD('define(1);')).to.be.ok();
+    });
   });
   describe('cjsify', function() {
     it('define outer wrap', function() {
