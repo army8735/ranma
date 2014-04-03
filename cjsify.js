@@ -128,11 +128,12 @@ exports.convert = function(code, tp) {
       return code + ';module.exports = null;'
     }
     else if(gVars.length == 1) {
-      return code + ';module.exports = ' + gVars[0] + ';';
+      return code + ';module.exports = ' + gVars[0].leaves()[0].token().content() + ';';
     }
     else {
       var res = code + ';';
       gVars.forEach(function(v) {
+        v = v.leaves()[0].token().content();
         res += 'exports["' + v + '"] = ' + 'v;';
       });
     }

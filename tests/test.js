@@ -120,6 +120,7 @@ describe('simple test', function() {
       expect(res).to.eql('module.exports = a;;');
     });
   });
+  });
 });
 describe('jslib test', function() {
   describe('Class', function() {
