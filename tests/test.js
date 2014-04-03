@@ -128,13 +128,16 @@ describe('simple test', function() {
     });
     it('define amd', function() {
       var res = ranma.cjsify('if(typeof define !== "undefined" && define.amd){define(function(){return 1;})}');
-      expect(res).to.eql('if(typeof define !== "undefined" ){module.exports = 1;}');
+      expect(res).to.eql('module.exports = 1;');
     });
   });
   describe('cmdify', function() {
-    //TODO 对define父层的if语句处理
-    it.skip('define.amd', function() {
+    it('define.amd', function() {
       var res = ranma.cmdify('if(typeof define !== "undefined" && define.amd){define(function(){})}');
+      expect(res).to.eql('if(typeof define !== "undefined" ){define(function(){})}');
+    });
+    it('define.amd.xxx', function() {
+      var res = ranma.cmdify('if(typeof define !== "undefined" && define.amd && define.amd.jQuery){define(function(){})}');
       expect(res).to.eql('if(typeof define !== "undefined" ){define(function(){})}');
     });
     it('commonjs', function() {

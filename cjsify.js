@@ -74,6 +74,23 @@ exports.convert = function(code, tp) {
     var defFact = getDefineAndFactory(context);
     var defBlock = pushToken(defFact.define.parent().parent());
     var facBlock = pushToken(defFact.factory);
+    //如果define的父语句是ifstmt，则将其删除
+    if(defFact.define.parent().name() == JsNode.PRMREXPR
+      && defFact.define.parent().parent()
+      && defFact.define.parent().parent().name() == JsNode.CALLEXPR
+      && defFact.define.parent().parent().parent()
+      && defFact.define.parent().parent().parent().name() == JsNode.EXPRSTMT) {
+      if(defFact.define.parent().parent().parent().parent()
+        && defFact.define.parent().parent().parent().parent().name() == JsNode.IFSTMT) {
+        defBlock = pushToken(defFact.define.parent().parent().parent().parent());
+      }
+      else if(defFact.define.parent().parent().parent().parent()
+        && defFact.define.parent().parent().parent().parent().name() == JsNode.BLOCK
+        && defFact.define.parent().parent().parent().parent().parent()
+        && defFact.define.parent().parent().parent().parent().parent().name() == JsNode.IFSTMT) {
+        defBlock = pushToken(defFact.define.parent().parent().parent().parent().parent());
+      }
+    }
     //将factory代码提取出来，删除define语句
     //factory为函数时，将return语句改为module.exports
     if(defFact.factory.name() == JsNode.FNEXPR) {
@@ -114,6 +131,8 @@ exports.convert = function(code, tp) {
       + code.slice(defBlock[defBlock.length - 1]);
   }
   else {
+    //TODO ~function(){}(this)的写法尚未考虑
+    //TODO 直接使用的未定义变量如jQuery作为依赖
     var context = tp.context;
     //全局变量，包括全局函数
     var gVars = context.getVars();

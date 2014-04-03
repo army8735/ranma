@@ -18,18 +18,40 @@ function removeAmd(context) {
         && par.next().next()
         && par.next().next().name() == JsNode.TOKEN
         && par.next().next().token().content() == 'amd') {
+        var res = [define[i].token().sIndex()];
         //将&& define.amd移除
         var mmb = par.parent();
         if(mmb.name() == JsNode.MMBEXPR) {
           var prev = mmb.prev();
           if(prev && prev.name() == JsNode.TOKEN && prev.token().content() == '&&') {
+            res[0] = [prev.token().sIndex()];
             var end = par.next().next();
             //可能的define.amd.jQuery也移除
             while(end.next()) {
               end = end.next();
             }
             end = end.token();
-            return [prev.token().sIndex(), end.sIndex() + end.content().length];
+            res[1] = end.sIndex() + end.content().length;
+            //后面多个&& define.amd.xxx判断也需移除
+            while(mmb = mmb.next()) {
+              if(mmb.name() == JsNode.TOKEN && mmb.token().content() == '&&') {
+                mmb = mmb.next();
+                if(mmb.name() == JsNode.MMBEXPR) {
+                  var leaves = mmb.leaves();
+                  if(leaves[0].name() == JsNode.PRMREXPR
+                    && leaves[0].leaves()[0].name() == JsNode.TOKEN
+                    && leaves[0].leaves()[0].token().content() == 'define') {
+                    end = leaves[0];
+                    while(end.next()) {
+                      end = end.next();
+                    }
+                    end = end.token();
+                    res[1] = end.sIndex() + end.content().length;
+                  }
+                }
+              }
+            }
+            return res;
           }
         }
       }
@@ -43,6 +65,7 @@ function removeAmd(context) {
     return index;
   }
 }
+
 exports.convert = function(code, tp) {
   tp = tp || type.analyse(code);
   if(tp.isAMD) {
