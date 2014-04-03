@@ -23,7 +23,12 @@ function removeAmd(context) {
         if(mmb.name() == JsNode.MMBEXPR) {
           var prev = mmb.prev();
           if(prev && prev.name() == JsNode.TOKEN && prev.token().content() == '&&') {
-            var end = par.next().next().token();
+            var end = par.next().next();
+            //可能的define.amd.jQuery也移除
+            while(end.next()) {
+              end = end.next();
+            }
+            end = end.token();
             return [prev.token().sIndex(), end.sIndex() + end.content().length];
           }
         }

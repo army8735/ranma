@@ -60,6 +60,42 @@ describe('simple test', function() {
       expect(type.isAMD).to.ok();
       expect(type.isCMD).to.not.ok();
     });
+    it('normal js', function() {
+      var type = ranma.type.analyse('var a = 1;');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('define is a var', function() {
+      var type = ranma.type.analyse('var define = function(){};define();');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('define is a param', function() {
+      var type = ranma.type.analyse('function a(define) {define();}');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('module is a var', function() {
+      var type = ranma.type.analyse('var module = {};module.exports = 1;');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('module is a param', function() {
+      var type = ranma.type.analyse('function a(module) {module.exports = 1;}');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('module in define', function() {
+      var type = ranma.type.analyse('define(function(require, exports, module){});');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.ok();
+    });
   });
   describe('cjsify', function() {
     it('define outer wrap', function() {
@@ -234,13 +270,17 @@ describe('jslib test', function() {
 //      fs.writeFileSync(path.join(__dirname, './amd/handlebars.js'), res, { encoding: 'utf-8' });
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/handlebars.js'), { encoding: 'utf-8' }));
     });
-  });return;
+  });
   describe('Uri', function() {
     var s = fs.readFileSync(path.join(__dirname, './src/Uri.js'), { encoding: 'utf-8' });
     var type = ranma.type.analyse(s);
-    it('type', function() {
+    it('type isCommonJS', function() {
       expect(type.isCommonJS).to.eql(true);
+    });
+    it('type isAMD', function() {
       expect(type.isAMD).to.eql(true);
+    });
+    it('type isCMD', function() {
       expect(type.isCMD).to.eql(false);
     });
     it('cjsify', function() {
@@ -253,22 +293,35 @@ describe('jslib test', function() {
     });
     it('cmdify', function() {
       var res = ranma.cmdify(s);
-      var cmdify = fs.readFileSync(path.join(__dirname, './cmd/Uri.js'), { encoding: 'utf-8' });
-      expect(res).to.eql(cmdify);
+//      fs.writeFileSync(path.join(__dirname, './cmd/Uri.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/Uri.js'), { encoding: 'utf-8' }));
     });
   });
   describe('jquery-1.8.3', function() {
     var s = fs.readFileSync(path.join(__dirname, './src/jquery-1.8.3.js'), { encoding: 'utf-8' });
     var type = ranma.type.analyse(s);
-    it('type', function() {
+    it('type isCommonJS', function() {
       expect(type.isCommonJS).to.eql(false);
+    });
+    it('type isAMD', function() {
       expect(type.isAMD).to.eql(true);
+    });
+    it('type isCMD', function() {
       expect(type.isCMD).to.eql(false);
     });
     it('cjsify', function() {
       var res = ranma.cjsify(s);
-      var cjsify = fs.readFileSync(path.join(__dirname, './cjs/jquery-1.8.3.js'), { encoding: 'utf-8' });
-      expect(res).to.eql(cjsify);
+      fs.writeFileSync(path.join(__dirname, './cjs/jquery-1.8.3.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/jquery-1.8.3.js'), { encoding: 'utf-8' }));
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+      expect(res).to.eql(s);
+    });
+    it('cmdify', function() {
+      var res = ranma.cmdify(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/jquery-1.8.3.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/jquery-1.8.3.js'), { encoding: 'utf-8' }));
     });
   });
 });
