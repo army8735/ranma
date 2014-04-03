@@ -96,9 +96,28 @@ describe('simple test', function() {
     });
   });
   describe('cmdify', function() {
-    it('define.amd', function() {
+    //TODO 对define父层的if语句处理
+    it.skip('define.amd', function() {
       var res = ranma.cmdify('if(typeof define !== "undefined" && define.amd){define(function(){})}');
       expect(res).to.eql('if(typeof define !== "undefined" ){define(function(){})}');
+    });
+    it('commonjs', function() {
+      var res = ranma.cmdify('module.exports = a;');
+      expect(res).to.eql('define(function(require, exports, module) {module.exports = a;});');
+    });
+    it('cmd', function() {
+      var res = ranma.cmdify('define(function(require, exports, module) {module.exports = a;});');
+      expect(res).to.eql('define(function(require, exports, module) {module.exports = a;});');
+    });
+  });
+  describe('cjsify', function() {
+    it('commonjs', function() {
+      var res = ranma.cjsify('module.exports = a;');
+      expect(res).to.eql('module.exports = a;');
+    });
+    it('cmd', function() {
+      var res = ranma.cjsify('define(function(require, exports, module) {module.exports = a;});');
+      expect(res).to.eql('module.exports = a;;');
     });
   });
 });
@@ -116,24 +135,36 @@ describe('jslib test', function() {
       expect(type.isCMD).to.eql(true);
     });
     it('cjsify', function() {
-      var res = ranma.cjsify(s);
+      var res = ranma.cjsify(s, type);
 //      fs.writeFileSync(path.join(__dirname, './cjs/Class.js'), res, { encoding: 'utf-8' });
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/Class.js'), { encoding: 'utf-8' }));
     });
-  });return;
-  describe('backbone', function() {
-    var s = fs.readFileSync(path.join(__dirname, './src/backbone.js'), { encoding: 'utf-8' });
-    it('type', function() {
-      var type = ranma.type.analyse(s);
-      expect(type.isCommonJS).to.eql(true);
-      expect(type.isAMD).to.eql(false);
-      expect(type.isCMD).to.eql(false);
+    it('cmdify', function() {
+      var res = ranma.cmdify(s, type);
+      expect(res).to.eql(s);
     });
-    it('cjsify', function() {
-      var res = ranma.cjsify(s);
+    it('amdify', function() {
+      var res = ranma.amdify(s, type);
       expect(res).to.eql(s);
     });
   });
+  describe('backbone', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/backbone.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(true);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(false);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s, type);
+      expect(res).to.eql(s);
+    });
+  });return;
   describe('expect', function() {
     var s = fs.readFileSync(path.join(__dirname, './src/expect.js'), { encoding: 'utf-8' });
     it('type', function() {

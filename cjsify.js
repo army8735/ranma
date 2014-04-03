@@ -69,10 +69,7 @@ exports.convert = function(code, tp) {
     var res = cmdify.convert(code, tp);
     return exports.convert(res);
   }
-  else if(tp.isAMD || tp.isCMD) {
-    if(tp.isAMD) {
-      code = cmdify.convert(code, tp);
-    }
+  else if(tp.isCMD) {
     var context = tp.context;
     var defFact = getDefineAndFactory(context);
     var defBlock = pushToken(defFact.define.parent().parent());
