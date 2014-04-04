@@ -26,10 +26,6 @@ function removeAmd(context) {
           if(prev && prev.name() == JsNode.TOKEN && prev.token().content() == '&&') {
             res[0] = [prev.token().sIndex()];
             var end = par.next().next();
-            //可能的define.amd.jQuery也移除
-            while(end.next()) {
-              end = end.next();
-            }
             end = end.token();
             res[1] = end.sIndex() + end.content().length;
             //后面多个&& define.amd.xxx判断也需移除
@@ -71,12 +67,8 @@ exports.convert = function(code, tp) {
   if(tp.isAMD) {
     var context = tp.context;
     var index = removeAmd(context);
-    if(index) {
-      return code.slice(0, index[0]) + code.slice(index[1]);
-    }
-    else {
-      return code;
-    }
+    //amd以define.amd作为判断一定会出现
+    return code.slice(0, index[0]) + code.slice(index[1]);
   }
   else if(tp.isCMD) {
     return code;

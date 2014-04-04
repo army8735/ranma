@@ -30,10 +30,22 @@ describe('simple test', function() {
       expect(type.isAMD).to.not.ok();
       expect(type.isCMD).to.ok();
     });
+    it('define with if no {}', function() {
+      var type = ranma.type.analyse('if(typeof define !== "undefined")define({})');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.ok();
+    });
     it('define.amd with if', function() {
       var type = ranma.type.analyse('if(typeof define !== "undefined" && define.amd){define({})}');
       expect(type.isCommonJS).to.not.ok();
       expect(type.isAMD).to.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('require is a function', function() {
+      var type = ranma.type.analyse('function require(p){}require("a")');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
       expect(type.isCMD).to.not.ok();
     });
     it('use require', function() {
@@ -139,6 +151,10 @@ describe('simple test', function() {
       var res = ranma.cjsify('if(typeof define !== "undefined" && define.amd){define(function(){return 1;})}');
       expect(res).to.eql('module.exports = 1;');
     });
+    it('define with if', function() {
+      var res = ranma.cjsify('if(typeof define !== "undefined")define({})');
+      expect(res).to.eql('module.exports = {}');
+    });
     it('normal js with var', function() {
       var res = ranma.cjsify('var a = 1;');
       expect(res).to.eql('var a = 1;;module.exports = a;')
@@ -155,13 +171,17 @@ describe('simple test', function() {
       var res = ranma.cjsify('var a = b, c = d;');
       expect(res).to.eql('var b = require("b");var d = require("d");var a = b, c = d;;exports["a"] = a;exports["c"] = c;');
     });
+    it('normala js without var', function() {
+      var res = ranma.cjsify('b.f();');
+      expect(res).to.eql('var b = require("b");b.f();');
+    });
   });
   describe('cmdify', function() {
     it('define.amd', function() {
       var res = ranma.cmdify('if(typeof define !== "undefined" && define.amd){define(function(){})}');
       expect(res).to.eql('if(typeof define !== "undefined" ){define(function(){})}');
     });
-    it('define.amd.xxx', function() {
+    it('define.amd && define.amd.xxx', function() {
       var res = ranma.cmdify('if(typeof define !== "undefined" && define.amd && define.amd.jQuery){define(function(){})}');
       expect(res).to.eql('if(typeof define !== "undefined" ){define(function(){})}');
     });
