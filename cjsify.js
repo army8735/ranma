@@ -60,7 +60,16 @@ function getDefineAndFactory(context) {
 }
 
 var globalVars = Object.create(null);
-['window', 'global', 'Error', 'document', 'navigator', 'this', 'undefined', 'null'].forEach(function(o) {
+['window',
+  'global',
+  'Error',
+  'document',
+  'navigator',
+  'this',
+  'undefined',
+  'null',
+  'location',
+  'console'].forEach(function(o) {
   globalVars[o] = true;
 });
 
