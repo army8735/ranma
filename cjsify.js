@@ -59,12 +59,16 @@ function getDefineAndFactory(context) {
   }
 }
 
+var globalVars = Object.create(null);
+['window', 'global', 'Error', 'document', 'navigator', 'this', 'undefined', 'null'].forEach(function(o) {
+  globalVars[o] = true;
+});
+
 exports.convert = function(code, tp) {
   tp = tp || type.analyse(code);
   if(tp.isCommonJS) {
     return code;
   }
-  //todo 对define的if判断语句移除
   else if(tp.isAMD) {
     var res = cmdify.convert(code, tp);
     return exports.convert(res);
@@ -132,7 +136,6 @@ exports.convert = function(code, tp) {
   }
   else {
     //TODO ~function(){}(this)的写法尚未考虑
-    //TODO 直接使用的未定义变量如jQuery作为依赖
     var context = tp.context;
     //全局变量，包括全局函数
     var gVars = context.getVars().map(function(v) {
@@ -145,10 +148,17 @@ exports.convert = function(code, tp) {
       }
     });
     //全局使用的未声明的变量
+    var hash = Object.create(null);
     var reqs = context.getVids().map(function(v) {
       return v.token().content();
     }).filter(function(v) {
-      return !context.hasVar(v) && !context.hasChild(v);
+      if(!context.hasVar(v) && !context.hasChild(v) && !(v in globalVars)) {
+        if(v in hash) {
+          return false;
+        }
+        hash[v] = true;
+        return true;
+      }
     });
     var requires = '';
     reqs.forEach(function(req) {

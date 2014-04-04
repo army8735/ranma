@@ -175,6 +175,14 @@ describe('simple test', function() {
       var res = ranma.cjsify('b.f();');
       expect(res).to.eql('var b = require("b");b.f();');
     });
+    it('global vars need ignore', function() {
+      var res = ranma.cjsify('var a = window, b = document; b = c;');
+      expect(res).to.eql('var c = require("c");var a = window, b = document; b = c;;exports["a"] = a;exports["b"] = b;');
+    });
+    it('multi global vars', function() {
+      var res = ranma.cjsify('var a = b;var a = b;');
+      expect(res).to.eql('var b = require("b");var a = b;var a = b;;module.exports = a;');
+    });
   });
   describe('cmdify', function() {
     it('define.amd', function() {
@@ -370,6 +378,60 @@ describe('jslib test', function() {
       var res = ranma.cmdify(s);
 //      fs.writeFileSync(path.join(__dirname, './cmd/jquery-1.8.3.js'), res, { encoding: 'utf-8' });
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/jquery-1.8.3.js'), { encoding: 'utf-8' }));
+    });
+  });
+  describe('bootstrap', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/bootstrap.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(false);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(false);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+//      fs.writeFileSync(path.join(__dirname, './cjs/bootstrap.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/bootstrap.js'), { encoding: 'utf-8' }));
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+//      fs.writeFileSync(path.join(__dirname, './amd/bootstrap.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/bootstrap.js'), { encoding: 'utf-8' }));
+    });
+    it('cmdify', function() {
+      var res = ranma.cmdify(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/bootstrap.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/bootstrap.js'), { encoding: 'utf-8' }));
+    });
+  });
+  describe('formatter', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/formatter.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(true);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(true);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+      expect(res).to.eql(s);
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+      expect(res).to.eql(s);
+    });
+    it('cmdify', function() {
+      var res = ranma.cmdify(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/formatter.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/formatter.js'), { encoding: 'utf-8' }));
     });
   });
 });
