@@ -29,6 +29,15 @@ ranma.amdify(code:String):String
 ranma.cmdify(code:String):String
 将代码转换为CMD
 
+ranma.type.isCommonJS(code:String):Boolean
+code是否是CommonJS
+
+ranma.type.isAMD(code:String):Boolean
+code是否是AMD
+
+ranma.type.isCMD(code:String):Boolean
+code是否是CMD
+
 ## License
 
 [MIT License]

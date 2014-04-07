@@ -1,4 +1,4 @@
-var ranma = require('../ranma');
+var ranma = require('../');
 
 var expect = require('expect.js');
 var fs = require('fs');

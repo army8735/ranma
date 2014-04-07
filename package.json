@@ -13,12 +13,12 @@
   },
   "config": {
     "blanket": {
-      "pattern": ["amdify.js",
-        "cmdify.js",
-        "cjsify.js",
-        "ranma.js",
-        "type.js",
-        "exist.js"]
+      "pattern": ["ranma/amdify.js",
+        "ranma/cmdify.js",
+        "ranma/cjsify.js",
+        "ranma/index.js",
+        "ranma/type.js",
+        "ranma/exist.js"]
     }
   },
   "repository": {
@@ -34,9 +34,9 @@
   "author": "army8735",
   "license": "MIT",
   "dependencies": {
-    "homunculus": "0.1.0"
+    "homunculus": "0.1.3"
   },
-  "main": "./ranma",
+  "main": "./index",
   "engines": {
     "node": ">= 0.10.0"
   },
