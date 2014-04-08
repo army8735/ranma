@@ -127,6 +127,10 @@ describe('simple test', function() {
       var res = ranma.cjsify('define(function(){return a;});');
       expect(res).to.eql('module.exports = a;;');
     });
+    it('define with function return undefined', function() {
+      var res = ranma.cjsify('define(function(){return;});');
+      expect(res).to.eql('module.exports = undefined;;');
+    });
     it('define with function return and exports', function() {
       var res = ranma.cjsify('define(function(){if(a)return 1;else module.exports = b})');
       expect(res).to.eql('if(a)module.exports = 1;else module.exports = b');

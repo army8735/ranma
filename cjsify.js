@@ -123,7 +123,8 @@ exports.convert = function(code, tp) {
             rets.reverse().forEach(function(ret) {
               var token = ret.token();
               var v = ret.next();
-              var s = 'module.exports =' + ((v.name() == JsNode.TOKEN) ? 'undefined' : '');
+              //return;语句可能无返回值，设为undefined
+              var s = 'module.exports =' + ((v.name() == JsNode.TOKEN) ? ' undefined' : '');
                 fac = fac.slice(0, token.sIndex() - index)
                   + s
                   + fac.slice(token.sIndex() - index + token.content().length);
