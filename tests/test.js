@@ -143,9 +143,21 @@ describe('simple test', function() {
       var res = ranma.cjsify('define(123);');
       expect(res).to.eql('module.exports = 123;');
     });
+    it('define a string', function() {
+      var res = ranma.cjsify('define("");');
+      expect(res).to.eql('module.exports = "";');
+    });
+    it('define an array', function() {
+      var res = ranma.cjsify('define([]);');
+      expect(res).to.eql('module.exports = [];');
+    });
+    it('define a ref', function() {
+      var res = ranma.cjsify('define(a);');
+      expect(res).to.eql('if(Object.prototype.toString.call(a) == "[object Function]") { ~function(){ var res = a();if(typeof res != "undefined") { module.exports = res } }() } else { module.exports = a };');
+    });
     it('define inner', function() {
       var res = ranma.cjsify('var a = 1;define(a);');
-      expect(res).to.eql('var a = 1;module.exports = a;')
+      expect(res).to.eql('var a = 1;if(Object.prototype.toString.call(a) == "[object Function]") { ~function(){ var res = a();if(typeof res != "undefined") { module.exports = res } }() } else { module.exports = a };')
     });
     it('define amd', function() {
       var res = ranma.cjsify('if(typeof define !== "undefined" && define.amd){define(function(){return 1;})}');

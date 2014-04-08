@@ -123,7 +123,7 @@ exports.convert = function(code, tp) {
             rets.reverse().forEach(function(ret) {
               var token = ret.token();
               var v = ret.next();
-              var s = 'module.exports =' + ((v.name() == JsNode.TOKEN) ? 'null' : '');
+              var s = 'module.exports =' + ((v.name() == JsNode.TOKEN) ? 'undefined' : '');
                 fac = fac.slice(0, token.sIndex() - index)
                   + s
                   + fac.slice(token.sIndex() - index + token.content().length);
@@ -136,12 +136,29 @@ exports.convert = function(code, tp) {
         + fac
         + code.slice(defBlock[defBlock.length - 1]);
     }
-    //factory为非函数时，直接添加module.exports
-    //TODO 也可能为传入的函数引用变量，暂且不考虑
-    return code.slice(0, defBlock[0])
-      + 'module.exports = '
-      + code.slice(facBlock[0], facBlock[facBlock.length - 1])
-      + code.slice(defBlock[defBlock.length - 1]);
+    //factory为非函数时
+    else {
+      var node = defFact.factory.leaves()[0];
+      //factory为变量引用需特殊处理
+      if(node.name() == JsNode.TOKEN && node.token().type() == Token.ID) {
+        return code.slice(0, defBlock[0])
+          + 'if(Object.prototype.toString.call(' + node.token().content() + ') == "[object Function]") { '
+            + '~function(){ var res = ' + node.token().content() + '();'
+              + 'if(typeof res != "undefined") { module.exports = res } }'
+            + '()'
+          + ' } else { ' + 'module.exports = '
+            + code.slice(facBlock[0], facBlock[facBlock.length - 1])
+          + ' }'
+          + code.slice(defBlock[defBlock.length - 1]);
+      }
+      //其它情况直接返回
+      else {
+        return code.slice(0, defBlock[0])
+          + 'module.exports = '
+          + code.slice(facBlock[0], facBlock[facBlock.length - 1])
+          + code.slice(defBlock[defBlock.length - 1]);
+      }
+    }
   }
   else {
     //TODO ~function(){}(this)的写法尚未考虑
