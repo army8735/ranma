@@ -14,10 +14,6 @@
 npm install ranma
 ```
 
-##test
-
-make test
-
 ##API
 
 ranma.cjsify(code:String):String

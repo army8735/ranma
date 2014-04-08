@@ -72,6 +72,10 @@ var globalVars = Object.create(null);
   'console'].forEach(function(o) {
   globalVars[o] = true;
 });
+var globalParam = Object.create(null);
+['window', 'this'].forEach(function(o) {
+  globalParam[o] = true;
+});
 
 exports.convert = function(code, tp) {
   tp = tp || type.analyse(code);
@@ -191,13 +195,61 @@ exports.convert = function(code, tp) {
     reqs.forEach(function(req) {
       requires += 'var ' + req + ' = require("' + req + '");';
     });
-    //没有全局变量赋值null，只有一个则直接赋给module.exports；否则将变量名作为key加上值组成hash赋给exports
+    //没有全局变量检查匿名函数的写法，即全局只有一个匿名函数上下文
+    //TODO ~function(){}.call(this)的写法
     if(gVars.length == 0) {
-      return requires + code;
+      var exp = '';
+      if(gChildren.length == 1 && gChildren[0].isFnexpr()) {
+        var aparams = gChildren[0].getAParams();
+        var params = gChildren[0].getParams();
+        var globalRef = Object.create(null);
+        var count = 0;
+        aparams.forEach(function(aparam, i) {
+          if(aparam.name() == JsNode.PRMREXPR
+            && aparam.leaves().length == 1
+            && aparam.leaves()[0].name() == JsNode.TOKEN
+            && aparam.leaves()[0].token().content() in globalParam) {
+            globalRef[params[i]] = true;
+            count++;
+          }
+        });
+        if(count) {
+          var hash = Object.create(null);
+          var arr = [];
+          gChildren[0].getVids().forEach(function(vid) {
+            if(vid.token().content() in globalRef
+              && vid.parent().name() == JsNode.PRMREXPR
+              && vid.parent().parent().name() == JsNode.MMBEXPR
+              && vid.parent().parent().parent().name() == JsNode.ASSIGNEXPR
+              && vid.parent().next()
+              && vid.parent().next().token().content() == '.'
+              && vid.parent().next().next()
+              && vid.parent().next().next().token().type() == Token.ID
+              && !vid.parent().next().next().next()) {
+              var v = vid.parent().next().next().token().content();
+              if(!(v in hash)) {
+                hash[v] = true;
+                arr.push(v);
+              }
+            }
+          });
+          if(arr.length == 1) {
+            exp = ';module.exports = this.' + arr[0] + ';';
+          }
+          else if(arr.length > 1) {
+            arr.forEach(function(v) {
+              exp += ';exports["' + v + '"] = this.' + v + ';';
+            });
+          }
+        }
+      }
+      return requires + code + exp;
     }
+    //只有一个则直接赋给module.exports
     else if(gVars.length == 1) {
       return requires + code + ';module.exports = ' + gVars[0] + ';';
     }
+    //有多个将变量名作为key加上值组成hash赋给exports
     else {
       var res = requires + code + ';';
       gVars.forEach(function(v) {

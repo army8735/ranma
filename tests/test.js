@@ -199,6 +199,10 @@ describe('simple test', function() {
       var res = ranma.cjsify('var a = b;var a = b;');
       expect(res).to.eql('var b = require("b");var a = b;var a = b;;module.exports = a;');
     });
+    it('global fnexpr', function() {
+      var res = ranma.cjsify('~function(g1, g2, o){g1.a = 1;g2.a = 1;g2.b = 2;o.c = 3;}(this, window, {})');
+      expect(res).to.eql('~function(g1, g2, o){g1.a = 1;g2.a = 1;g2.b = 2;o.c = 3;}(this, window, {});exports["a"] = this.a;;exports["b"] = this.b;');
+    });
   });
   describe('cmdify', function() {
     it('define.amd', function() {
@@ -448,6 +452,90 @@ describe('jslib test', function() {
       var res = ranma.cmdify(s);
 //      fs.writeFileSync(path.join(__dirname, './cmd/formatter.js'), res, { encoding: 'utf-8' });
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/formatter.js'), { encoding: 'utf-8' }));
+    });
+  });
+  describe('html5shiv', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/html5shiv.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(false);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(false);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+//      fs.writeFileSync(path.join(__dirname, './cjs/html5shiv.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/html5shiv.js'), { encoding: 'utf-8' }));
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+//      fs.writeFileSync(path.join(__dirname, './amd/html5shiv.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/html5shiv.js'), { encoding: 'utf-8' }));
+    });
+    it('cmdify', function() {
+      var res = ranma.amdify(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/html5shiv.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/html5shiv.js'), { encoding: 'utf-8' }));
+    });
+  });
+  describe('keymaster', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/keymaster.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(true);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(false);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+//      fs.writeFileSync(path.join(__dirname, './cjs/keymaster.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/keymaster.js'), { encoding: 'utf-8' }));
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+//      fs.writeFileSync(path.join(__dirname, './amd/keymaster.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/keymaster.js'), { encoding: 'utf-8' }));
+    });
+    it('cmdify', function() {
+      var res = ranma.amdify(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/keymaster.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/keymaster.js'), { encoding: 'utf-8' }));
+    });
+  });
+  describe.skip('keypress', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/keypress.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(false);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(false);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+//      fs.writeFileSync(path.join(__dirname, './cjs/keypress.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/keypress.js'), { encoding: 'utf-8' }));
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+//      fs.writeFileSync(path.join(__dirname, './amd/keypress.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/keypress.js'), { encoding: 'utf-8' }));
+    });
+    it('cmdify', function() {
+      var res = ranma.amdify(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/keypress.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/keypress.js'), { encoding: 'utf-8' }));
     });
   });
 });
