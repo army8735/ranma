@@ -1061,4 +1061,4 @@ Combo options available and their defaults:
   _change_keycodes_by_browser();
 
 }).call(this);
-});
+;module.exports = this.keypress;});

@@ -203,6 +203,26 @@ describe('simple test', function() {
       var res = ranma.cjsify('~function(g1, g2, o){g1.a = 1;g2.a = 1;g2.b = 2;o.c = 3;}(this, window, {})');
       expect(res).to.eql('~function(g1, g2, o){g1.a = 1;g2.a = 1;g2.b = 2;o.c = 3;}(this, window, {});exports["a"] = this.a;;exports["b"] = this.b;');
     });
+    it('global fnexpr call this', function() {
+      var res = ranma.cjsify('~function(){this.a = 1;}.call(this)');
+      expect(res).to.eql('~function(){this.a = 1;}.call(this);module.exports = this.a;')
+    });
+    it('global fnexpr call null', function() {
+      var res = ranma.cjsify('~function(){this.a = 1;}.call(null)');
+      expect(res).to.eql('~function(){this.a = 1;}.call(null);module.exports = this.a;')
+    });
+    it('global fnexpr apply window', function() {
+      var res = ranma.cjsify('~function(){this.a = 1;}.apply(window)');
+      expect(res).to.eql('~function(){this.a = 1;}.apply(window);module.exports = this.a;')
+    });
+    it('global fnexpr apply params', function() {
+      var res = ranma.cjsify('~function(g){this.a = 1;g.b = 2;}.apply(window, [window])');
+      expect(res).to.eql('~function(g){this.a = 1;g.b = 2;}.apply(window, [window]);exports["a"] = this.a;;exports["b"] = this.b;');
+    });
+    it('global fnexpr use window or this direct', function() {
+      var res = ranma.cjsify('~function(){this.a = 1;window.b = 2;}()');
+      expect(res).to.eql('~function(){this.a = 1;window.b = 2;}();exports["a"] = this.a;;exports["b"] = this.b;');
+    });
   });
   describe('cmdify', function() {
     it('define.amd', function() {
@@ -477,7 +497,7 @@ describe('jslib test', function() {
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/html5shiv.js'), { encoding: 'utf-8' }));
     });
     it('cmdify', function() {
-      var res = ranma.amdify(s);
+      var res = ranma.cmdify(s);
 //      fs.writeFileSync(path.join(__dirname, './cmd/html5shiv.js'), res, { encoding: 'utf-8' });
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/html5shiv.js'), { encoding: 'utf-8' }));
     });
@@ -505,12 +525,12 @@ describe('jslib test', function() {
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/keymaster.js'), { encoding: 'utf-8' }));
     });
     it('cmdify', function() {
-      var res = ranma.amdify(s);
+      var res = ranma.cmdify(s);
 //      fs.writeFileSync(path.join(__dirname, './cmd/keymaster.js'), res, { encoding: 'utf-8' });
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/keymaster.js'), { encoding: 'utf-8' }));
     });
   });
-  describe.skip('keypress', function() {
+  describe('keypress', function() {
     var s = fs.readFileSync(path.join(__dirname, './src/keypress.js'), { encoding: 'utf-8' });
     var type = ranma.type.analyse(s);
     it('type isCommonJS', function() {
@@ -533,9 +553,64 @@ describe('jslib test', function() {
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/keypress.js'), { encoding: 'utf-8' }));
     });
     it('cmdify', function() {
-      var res = ranma.amdify(s);
+      var res = ranma.cmdify(s);
 //      fs.writeFileSync(path.join(__dirname, './cmd/keypress.js'), res, { encoding: 'utf-8' });
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/keypress.js'), { encoding: 'utf-8' }));
+    });
+  });
+  describe('md5', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/md5.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(false);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(true);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+//      fs.writeFileSync(path.join(__dirname, './cjs/md5.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/md5.js'), { encoding: 'utf-8' }));
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+      expect(res).to.eql(s);
+    });
+    it('cmdify', function() {
+      var res = ranma.cmdify(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/md5.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/md5.js'), { encoding: 'utf-8' }));
+    });
+  });
+  describe.skip('mocha', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/mocha.js'), { encoding: 'utf-8' });
+    var type = ranma.type.analyse(s);
+    it('type isCommonJS', function() {
+      expect(type.isCommonJS).to.eql(false);
+    });
+    it('type isAMD', function() {
+      expect(type.isAMD).to.eql(false);
+    });
+    it('type isCMD', function() {
+      expect(type.isCMD).to.eql(false);
+    });
+    it('cjsify', function() {
+      var res = ranma.cjsify(s);
+      fs.writeFileSync(path.join(__dirname, './cjs/mocha.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/mocha.js'), { encoding: 'utf-8' }));
+    });
+    it('amdify', function() {
+      var res = ranma.amdify(s);
+      fs.writeFileSync(path.join(__dirname, './amd/mocha.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/mocha.js'), { encoding: 'utf-8' }));
+    });
+    it('cmdify', function() {
+      var res = ranma.cmdify(s);
+      fs.writeFileSync(path.join(__dirname, './cmd/mocha.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/mocha.js'), { encoding: 'utf-8' }));
     });
   });
 });

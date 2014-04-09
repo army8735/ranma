@@ -196,51 +196,63 @@ exports.convert = function(code, tp) {
       requires += 'var ' + req + ' = require("' + req + '");';
     });
     //没有全局变量检查匿名函数的写法，即全局只有一个匿名函数上下文
-    //TODO ~function(){}.call(this)的写法
+    //TODO ~function(){}.call(this)的递归写法
     if(gVars.length == 0) {
       var exp = '';
       if(gChildren.length == 1 && gChildren[0].isFnexpr()) {
         var aparams = gChildren[0].getAParams();
         var params = gChildren[0].getParams();
         var globalRef = Object.create(null);
-        var count = 0;
+        //实参为this或window则说明传入全局引用
         aparams.forEach(function(aparam, i) {
           if(aparam.name() == JsNode.PRMREXPR
             && aparam.leaves().length == 1
             && aparam.leaves()[0].name() == JsNode.TOKEN
             && aparam.leaves()[0].token().content() in globalParam) {
             globalRef[params[i]] = true;
-            count++;
           }
         });
-        if(count) {
-          var hash = Object.create(null);
-          var arr = [];
-          gChildren[0].getVids().forEach(function(vid) {
-            if(vid.token().content() in globalRef
-              && vid.parent().name() == JsNode.PRMREXPR
-              && vid.parent().parent().name() == JsNode.MMBEXPR
-              && vid.parent().parent().parent().name() == JsNode.ASSIGNEXPR
-              && vid.parent().next()
-              && vid.parent().next().token().content() == '.'
-              && vid.parent().next().next()
-              && vid.parent().next().next().token().type() == Token.ID
-              && !vid.parent().next().next().next()) {
-              var v = vid.parent().next().next().token().content();
-              if(!(v in hash)) {
-                hash[v] = true;
-                arr.push(v);
-              }
+        var thisIs = gChildren[0].getThis();
+        //call或者apply的写法中要检查第一个参数是否是this或者window或者null
+        if(thisIs === null
+          || (thisIs.name() == JsNode.PRMREXPR
+            && thisIs.leaves().length == 1
+            && thisIs.leaves()[0].name() == JsNode.TOKEN
+            && (thisIs.leaves()[0].token().content() in globalParam
+              || thisIs.leaves()[0].token().content() == 'null'))) {
+          globalRef['this'] = true;
+        }
+        //直接使用window且参数中无window
+        if(!gChildren[0].hasParam('window')) {
+          globalRef['window'] = true;
+        }
+        var hash = Object.create(null);
+        var arr = [];
+        //使用值为全局的参数引用，并且在这个引用的属性上赋值，相当于全局声明变量
+        gChildren[0].getVids().forEach(function(vid) {
+          if(vid.token().content() in globalRef
+            && vid.parent().name() == JsNode.PRMREXPR
+            && vid.parent().parent().name() == JsNode.MMBEXPR
+            && vid.parent().parent().parent().name() == JsNode.ASSIGNEXPR
+            && vid.parent().next()
+            && vid.parent().next().token().content() == '.'
+            && vid.parent().next().next()
+            && vid.parent().next().next().token().type() == Token.ID
+            && !vid.parent().next().next().next()) {
+            var v = vid.parent().next().next().token().content();
+            if(!(v in hash)) {
+              hash[v] = true;
+              arr.push(v);
             }
+          }
+        });
+        if(arr.length == 1) {
+          exp = ';module.exports = this.' + arr[0] + ';';
+        }
+        else if(arr.length > 1) {
+          arr.forEach(function(v) {
+            exp += ';exports["' + v + '"] = this.' + v + ';';
           });
-          if(arr.length == 1) {
-            exp = ';module.exports = this.' + arr[0] + ';';
-          }
-          else if(arr.length > 1) {
-            arr.forEach(function(v) {
-              exp += ';exports["' + v + '"] = this.' + v + ';';
-            });
-          }
         }
       }
       return requires + code + exp;

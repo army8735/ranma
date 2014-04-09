@@ -1,4 +1,4 @@
-##A converter between CommonJS/AMD/CMD/other
+## A converter between CommonJS/AMD/CMD/other
 
 [![NPM version](https://badge.fury.io/js/ranma.png)](https://npmjs.org/package/ranma)
 [![Build Status](https://travis-ci.org/army8735/ranma.svg?branch=master)](https://travis-ci.org/army8735/ranma)
@@ -8,17 +8,17 @@
 为满足所写的代码能同时运行于server环境和web环境，而不需手动修改，所以做了个转换方法，使得几者之间的模块能够互相等价转化。
 <br/>需要注意的是AMD模块的写法应遵守文件和模块一对一的原则。
 
-##INSTALL
+## INSTALL
 
 ```js
 npm install ranma
 ```
 
-##API
+## API
 
 * ranma.cjsify(code:String):String
 <br/>将代码转换为CommonJS
-<br/>对于amd和cmd，会将define的factory提取，改写return为module.exports并删除define，如果define父语句有if判断也会删除
+<br/>对于AMD和CMD，会将define的factory提取，改写return为module.exports并删除define，如果define父语句有if判断也会删除
 <br/>对于普通文件，会将全局声明的变量作为exports，全局使用的未声明变量作为require
 
 * ranma.amdify(code:String):String
