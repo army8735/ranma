@@ -265,7 +265,7 @@
     }
 
     if (typeof define === 'function' ) {
-        define(function () {
+        define(function (require, exports, module) {
             return md5;
         });
     } else {

@@ -37,8 +37,36 @@ function analyse(context) {
       else if(!isAMD
         && par
         && par.next()
-        && par.next().name() == JsNode.ARGS) {
-        isCMD = true;
+        && par.next().name() == JsNode.ARGS
+        && par.next().leaves().length == 3) {
+        //检查factory的参数是否是require,exports,module的CMD写法；
+        var arglist = par.next().leaves()[1];
+        var factory = arglist.leaves().slice(-1)[0];
+        if(factory.name() == JsNode.FNEXPR) {
+          var fnparams = factory.leaves()[2];
+          if(fnparams.name() == JsNode.TOKEN && fnparams.token().content() == '(') {
+            fnparams = fnparams.next();
+          }
+          if(fnparams.name() == JsNode.FNPARAMS) {
+            var params = [];
+            fnparams.leaves().forEach(function(leaf, i) {
+              if(i % 2 == 0) {
+                var name = leaf.token().content();
+                params.push(name);
+              }
+            });
+            if(params.join(',') != 'require,exports,module') {
+              isAMD = true;
+            }
+          }
+          //factory无参数是AMD
+          else {
+            isAMD = true;
+          }
+        }
+        if(!isAMD) {
+          isCMD = true;
+        }
       }
     }
   }

@@ -166,7 +166,6 @@ exports.convert = function(code, tp) {
     }
   }
   else {
-    //TODO ~function(){}(this)的写法尚未考虑
     var context = tp.context;
     //全局变量，包括全局函数
     var gVars = context.getVars().map(function(v) {
@@ -196,7 +195,6 @@ exports.convert = function(code, tp) {
       requires += 'var ' + req + ' = require("' + req + '");';
     });
     //没有全局变量检查匿名函数的写法，即全局只有一个匿名函数上下文
-    //TODO ~function(){}.call(this)的递归写法
     if(gVars.length == 0) {
       var exp = '';
       if(gChildren.length == 1 && gChildren[0].isFnexpr()) {

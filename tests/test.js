@@ -9,8 +9,14 @@ describe('simple test', function() {
     it('define outer wrap', function() {
       var type = ranma.type.analyse('define(function(){});');
       expect(type.isCommonJS).to.not.ok();
-      expect(type.isAMD).to.not.ok();
-      expect(type.isCMD).to.ok();
+      expect(type.isAMD).to.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('define factory has a name', function() {
+      var type = ranma.type.analyse('define(function a(){});');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.ok();
+      expect(type.isCMD).to.not.ok();
     });
     it('define an object', function() {
       var type = ranma.type.analyse('define({});');
@@ -38,6 +44,12 @@ describe('simple test', function() {
     });
     it('define.amd with if', function() {
       var type = ranma.type.analyse('if(typeof define !== "undefined" && define.amd){define({})}');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.ok();
+      expect(type.isCMD).to.not.ok();
+    });
+    it('define factory by amd style', function() {
+      var type = ranma.type.analyse('define(["dep"], function(dep) {})');
       expect(type.isCommonJS).to.not.ok();
       expect(type.isAMD).to.ok();
       expect(type.isCMD).to.not.ok();
@@ -120,7 +132,7 @@ describe('simple test', function() {
   });
   describe('cjsify', function() {
     it('define outer wrap', function() {
-      var res = ranma.cjsify('define(function(){});');
+      var res = ranma.cjsify('define([], function(){});');
       expect(res).to.eql(';');
     });
     it('define with function return', function() {
@@ -227,11 +239,19 @@ describe('simple test', function() {
   describe('cmdify', function() {
     it('define.amd', function() {
       var res = ranma.cmdify('if(typeof define !== "undefined" && define.amd){define(function(){})}');
-      expect(res).to.eql('if(typeof define !== "undefined" ){define(function(){})}');
+      expect(res).to.eql('if(typeof define !== "undefined" ){define(function(require, exports, module){})}');
     });
     it('define.amd && define.amd.xxx', function() {
       var res = ranma.cmdify('if(typeof define !== "undefined" && define.amd && define.amd.jQuery){define(function(){})}');
-      expect(res).to.eql('if(typeof define !== "undefined" ){define(function(){})}');
+      expect(res).to.eql('if(typeof define !== "undefined" ){define(function(require, exports, module){})}');
+    });
+    it('define factory in amd style', function() {
+      var res = ranma.cmdify('define(["a", "b"], function(a, b) {})');
+      expect(res).to.eql('define(["a", "b"], function(require, exports, module) {var a = require("a");var b = require("b");})');
+    });
+    it('define deps not compact to params', function() {
+      var res = ranma.cmdify('~function(){define(["a", "b"], function f(a){})}()');
+      expect(res).to.eql('~function(){define(["a", "b"], function f(require, exports, module){var a = require("a");})}()');
     });
     it('commonjs', function() {
       var res = ranma.cmdify('module.exports = a;');
@@ -251,10 +271,16 @@ describe('simple test', function() {
       var res = ranma.cjsify('define(function(require, exports, module) {module.exports = a;});');
       expect(res).to.eql('module.exports = a;;');
     });
+    it('cmd with deps', function() {
+      var res = ranma.cjsify('define(["b"], function(require, exports, module) {var b = require("b");module.exports = a;});');
+      expect(res).to.eql('var b = require("b");module.exports = a;;');
+    });
   });
   describe('amdify', function() {
-    it.skip('as same sa cjsify', function() {
-      //
+    it('cmd is compact to amd', function() {
+      var s = 'define(function(require, exports, module){})';
+      var res = ranma.amdify(s);
+      expect(res).to.eql(s);
     });
   });
 });
@@ -266,10 +292,10 @@ describe('jslib test', function() {
       expect(type.isCommonJS).to.eql(false);
     });
     it('type isAMD', function() {
-      expect(type.isAMD).to.eql(false);
+      expect(type.isAMD).to.eql(true);
     });
     it('type isCMD', function() {
-      expect(type.isCMD).to.eql(true);
+      expect(type.isCMD).to.eql(false);
     });
     it('cjsify', function() {
       var res = ranma.cjsify(s);
@@ -278,7 +304,8 @@ describe('jslib test', function() {
     });
     it('cmdify', function() {
       var res = ranma.cmdify(s);
-      expect(res).to.eql(s);
+//      fs.writeFileSync(path.join(__dirname, './cmd/Class.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/Class.js'), { encoding: 'utf-8' }));
     });
     it('amdify', function() {
       var res = ranma.amdify(s);

@@ -402,7 +402,7 @@
    * export via AMD or CommonJS, otherwise leak a global
    */
   if (typeof define === 'function' ) {
-    define(function() {
+    define(function(require, exports, module) {
       return Uri;
     });
   } else if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
