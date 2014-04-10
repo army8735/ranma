@@ -585,8 +585,8 @@ describe('jslib test', function() {
       expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/md5.js'), { encoding: 'utf-8' }));
     });
   });
-  describe.skip('mocha', function() {
-    var s = fs.readFileSync(path.join(__dirname, './src/mocha.js'), { encoding: 'utf-8' });
+  describe('jQuery-watch', function() {
+    var s = fs.readFileSync(path.join(__dirname, './src/jQuery-watch.js'), { encoding: 'utf-8' });
     var type = ranma.type.analyse(s);
     it('type isCommonJS', function() {
       expect(type.isCommonJS).to.eql(false);
@@ -599,18 +599,18 @@ describe('jslib test', function() {
     });
     it('cjsify', function() {
       var res = ranma.cjsify(s);
-      fs.writeFileSync(path.join(__dirname, './cjs/mocha.js'), res, { encoding: 'utf-8' });
-      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/mocha.js'), { encoding: 'utf-8' }));
+//      fs.writeFileSync(path.join(__dirname, './cjs/jQuery-watch.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cjs/jQuery-watch.js'), { encoding: 'utf-8' }));
     });
     it('amdify', function() {
       var res = ranma.amdify(s);
-      fs.writeFileSync(path.join(__dirname, './amd/mocha.js'), res, { encoding: 'utf-8' });
-      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/mocha.js'), { encoding: 'utf-8' }));
+//      fs.writeFileSync(path.join(__dirname, './amd/jQuery-watch.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './amd/jQuery-watch.js'), { encoding: 'utf-8' }));
     });
     it('cmdify', function() {
       var res = ranma.cmdify(s);
-      fs.writeFileSync(path.join(__dirname, './cmd/mocha.js'), res, { encoding: 'utf-8' });
-      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/mocha.js'), { encoding: 'utf-8' }));
+//      fs.writeFileSync(path.join(__dirname, './cmd/jQuery-watch.js'), res, { encoding: 'utf-8' });
+      expect(res).to.eql(fs.readFileSync(path.join(__dirname, './cmd/jQuery-watch.js'), { encoding: 'utf-8' }));
     });
   });
 });
