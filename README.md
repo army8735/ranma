@@ -24,10 +24,12 @@ npm install ranma
 * ranma.amdify(code:String):String
 <br/>将代码转换为AMD
 <br/>在cjsify的基础上进行define包裹
+<br/>如果代码是CMD不做修改，因为AMD兼容这种写法
 
 * ranma.cmdify(code:String):String
 <br/>将代码转换为CMD
 <br/>在cjsify的基础上进行define包裹
+<br/>如果code是AMD类型，会进行依赖转化——即将factory的参数改为CMD的require, exports, module固定参数，同时依赖变为require变量声明
 
 * ranma.type.isCommonJS(code:String):Boolean
 <br/>code是否是CommonJS
@@ -37,6 +39,10 @@ npm install ranma
 
 * ranma.type.isCMD(code:String):Boolean
 <br/>code是否是CMD
+
+#### AMD和CMD的区分依据
+* 是否出现define.amd的判断
+* factory的参数是否为固定的require, exports, module
 
 ## License
 
