@@ -172,7 +172,15 @@ exports.convert = function(code, tp) {
             req += 'var ' + d + ' = require(' + s + ');';
           }
         });
-        code = code.slice(0, defDeps.params.start)
+        code = (defDeps.array ? (code.slice(0, defDeps.array.start)
+            + code.slice(defDeps.array.start, defDeps.array.end).replace(/(["']).+?\1/g, function(s) {
+              if(/^['"][^./]/.test(s)) {
+                s = s.charAt(0) + './' + s.slice(1);
+              }
+              return s;
+            })
+            + code.slice(defDeps.array.end, defDeps.params.start)
+          ) : code.slice(0, defDeps.params.start))
           + 'require, exports, module' + code.slice(defDeps.params.end, defDeps.fnbody)
           + req
           + code.slice(defDeps.fnbody);

@@ -246,12 +246,12 @@ describe('simple test', function() {
       expect(res).to.eql('if(typeof define !== "undefined" ){define(function(require, exports, module){})}');
     });
     it('define factory in amd style', function() {
-      var res = ranma.cmdify('define(["a", "b"], function(a, b) {})');
-      expect(res).to.eql('define(["a", "b"], function(require, exports, module) {var a = require("./a");var b = require("./b");})');
+      var res = ranma.cmdify('define(["./a", "./b"], function(a, b) {})');
+      expect(res).to.eql('define(["./a", "./b"], function(require, exports, module) {var a = require("./a");var b = require("./b");})');
     });
     it('define deps not compact to params', function() {
       var res = ranma.cmdify('~function(){define(["a", "b"], function f(a){})}()');
-      expect(res).to.eql('~function(){define(["a", "b"], function f(require, exports, module){var a = require("./a");})}()');
+      expect(res).to.eql('~function(){define(["./a", "./b"], function f(require, exports, module){var a = require("./a");})}()');
     });
     it('commonjs', function() {
       var res = ranma.cmdify('module.exports = a;');

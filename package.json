@@ -1,6 +1,6 @@
 {
   "name": "ranma",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A converter between CommonJS/AMD/CMD/other",
   "maintainers": [
     {
