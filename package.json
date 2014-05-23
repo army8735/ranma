@@ -34,7 +34,7 @@
   "author": "army8735",
   "license": "MIT",
   "dependencies": {
-    "homunculus": "0.1.7"
+    "homunculus": "0.1.9"
   },
   "main": "./index",
   "engines": {
