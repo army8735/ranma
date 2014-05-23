@@ -164,7 +164,12 @@ exports.convert = function(code, tp) {
         var req = '';
         defDeps.params.source.forEach(function(d, i) {
           if(d != 'require' && d != 'exports' && d != 'module') {
-            req += 'var ' + d + ' = require(' + defDeps.array.source[i] + ');';
+            //AMD和CMD有区别，非绝对路径都是相对当前路径，即"a"->"./a"
+            var s = defDeps.array.source[i];
+            if(/^['"][^./]/.test(s)) {
+              s = s.charAt(0) + './' + s.slice(1)
+            }
+            req += 'var ' + d + ' = require(' + s + ');';
           }
         });
         code = code.slice(0, defDeps.params.start)
