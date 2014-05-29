@@ -37,6 +37,9 @@
     "homunculus": "0.1.11"
   },
   "main": "./index",
+  "spm": {
+    "main": "./index"
+  },
   "engines": {
     "node": ">= 0.10.0"
   },
