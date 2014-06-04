@@ -37,14 +37,14 @@ function getDefineAmd(context) {
               if(mmb.name() == JsNode.TOKEN && mmb.token().content() == '&&') {
                 mmb = mmb.next();
                 if(mmb.name() == JsNode.MMBEXPR) {
-                  var leaves = mmb.leaves();
-                  if(leaves[0].name() == JsNode.PRMREXPR
-                    && leaves[0].leaves()[0].name() == JsNode.TOKEN
-                    && leaves[0].leaves()[0].token().content() == 'define') {
-                    end = leaves[0];
-                    while(end.next()) {
-                      end = end.next();
-                    }
+                  var token = mmb;
+                  while(token.name() == JsNode.MMBEXPR) {
+                    token = token.leaf(0);
+                  }
+                  if(token.name() == JsNode.PRMREXPR
+                    && token.leaf(0).name() == JsNode.TOKEN
+                    && token.leaf(0).token().content() == 'define') {
+                    end = mmb.leaf(mmb.size() - 1);
                     end = end.token();
                     res.end = end.sIndex() + end.content().length;
                   }
