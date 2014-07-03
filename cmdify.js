@@ -198,6 +198,12 @@ exports.convert = function(code, tp) {
   else if(tp.isCommonJS) {
     return 'define(function(require, exports, module) {' + code + '});';
   }
+  else if(tp.isModule) {
+    return 'define(function(require, exports, module) {' + tp.code + '});';
+  }
+  else if(tp.es6) {
+    return 'define(function(require, exports, module) {' + cjsify.convert(tp.code) + '});';
+  }
   else {
     return 'define(function(require, exports, module) {' + cjsify.convert(code, tp) + '});';
   }

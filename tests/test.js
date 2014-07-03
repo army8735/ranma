@@ -120,6 +120,27 @@ describe('simple test', function() {
       expect(type.isAMD).to.not.ok();
       expect(type.isCMD).to.ok();
     });
+    it('es6 module', function() {
+      var type = ranma.type.analyse('module a from "a"');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+      expect(type.isModule).to.ok();
+    });
+    it('es6 export', function() {
+      var type = ranma.type.analyse('export var a = 1');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+      expect(type.isModule).to.ok();
+    });
+    it('es6 import', function() {
+      var type = ranma.type.analyse('import a from "a"');
+      expect(type.isCommonJS).to.not.ok();
+      expect(type.isAMD).to.not.ok();
+      expect(type.isCMD).to.not.ok();
+      expect(type.isModule).to.ok();
+    });
     it('#isCommonJs', function() {
       expect(ranma.type.isCommonJS('exports.a = 1;')).to.be.ok();
     });
@@ -128,6 +149,9 @@ describe('simple test', function() {
     });
     it('#isCMD', function() {
       expect(ranma.type.isCMD('define(1);')).to.be.ok();
+    });
+    it('#isModule', function() {
+      expect(ranma.type.isModule('export default a')).to.be.ok();
     });
   });
   describe('cjsify', function() {
@@ -235,6 +259,26 @@ describe('simple test', function() {
       var res = ranma.cjsify('~function(){this.a = 1;window.b = 2;}()');
       expect(res).to.eql('~function(){this.a = 1;window.b = 2;}();exports["a"] = this.a;;exports["b"] = this.b;');
     });
+    it('commonjs', function() {
+      var res = ranma.cjsify('module.exports = a;');
+      expect(res).to.eql('module.exports = a;');
+    });
+    it('cmd', function() {
+      var res = ranma.cjsify('define(function(require, exports, module) {module.exports = a;});');
+      expect(res).to.eql('module.exports = a;;');
+    });
+    it('cmd with deps', function() {
+      var res = ranma.cjsify('define(["b"], function(require, exports, module) {var b = require("b");module.exports = a;});');
+      expect(res).to.eql('var b = require("b");module.exports = a;;');
+    });
+    it('es6 module', function() {
+      var res = ranma.cjsify('module a from "a"');
+      expect(res).to.eql('var a=require("a");');
+    });
+    it('es6 not module', function() {
+      var res = ranma.cjsify('var [a] = [1]');
+      expect(res).to.eql('var a;!function(){var _0_= [1];a=_0_[0]}();module.exports = a;');
+    });
   });
   describe('cmdify', function() {
     it('define.amd', function() {
@@ -261,19 +305,13 @@ describe('simple test', function() {
       var res = ranma.cmdify('define(function(require, exports, module) {module.exports = a;});');
       expect(res).to.eql('define(function(require, exports, module) {module.exports = a;});');
     });
-  });
-  describe('cjsify', function() {
-    it('commonjs', function() {
-      var res = ranma.cjsify('module.exports = a;');
-      expect(res).to.eql('module.exports = a;');
+    it('es6 module', function() {
+      var res = ranma.cmdify('module a from "a"');
+      expect(res).to.eql('define(function(require, exports, module) {var a=require("a");});');
     });
-    it('cmd', function() {
-      var res = ranma.cjsify('define(function(require, exports, module) {module.exports = a;});');
-      expect(res).to.eql('module.exports = a;;');
-    });
-    it('cmd with deps', function() {
-      var res = ranma.cjsify('define(["b"], function(require, exports, module) {var b = require("b");module.exports = a;});');
-      expect(res).to.eql('var b = require("b");module.exports = a;;');
+    it('es6 not module', function() {
+      var res = ranma.cmdify('var [a] = [1]');
+      expect(res).to.eql('define(function(require, exports, module) {var a;!function(){var _0_= [1];a=_0_[0]}();module.exports = a;});');
     });
   });
   describe('amdify', function() {

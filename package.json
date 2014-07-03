@@ -1,6 +1,6 @@
 {
   "name": "ranma",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A converter between CommonJS/AMD/CMD/other",
   "maintainers": [
     {
@@ -13,12 +13,14 @@
   },
   "config": {
     "blanket": {
-      "pattern": ["ranma/amdify.js",
+      "pattern": [
+        "ranma/amdify.js",
         "ranma/cmdify.js",
         "ranma/cjsify.js",
         "ranma/index.js",
         "ranma/type.js",
-        "ranma/exist.js"]
+        "ranma/exist.js"
+      ]
     }
   },
   "repository": {
@@ -29,12 +31,14 @@
     "convert",
     "commonjs",
     "amd",
-    "cmd"
+    "cmd",
+    "es6 module"
   ],
   "author": "army8735",
   "license": "MIT",
   "dependencies": {
-    "homunculus": "^0.2.3"
+    "homunculus": "^0.3.7",
+    "jsdc": "^0.4.2"
   },
   "main": "./index",
   "spm": {

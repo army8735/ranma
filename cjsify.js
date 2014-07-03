@@ -82,6 +82,12 @@ exports.convert = function(code, tp) {
   if(tp.isCommonJS) {
     return code;
   }
+  else if(tp.isModule) {
+    return tp.code;
+  }
+  else if(tp.es6) {
+    return exports.convert(tp.code);
+  }
   else if(tp.isAMD) {
     var res = cmdify.convert(code, tp);
     return exports.convert(res);

@@ -1,12 +1,16 @@
 var homunculus = require('homunculus');
 var Token = homunculus.getClass('token');
 var JsNode = homunculus.getClass('node', 'js');
+var Es6Node = homunculus.getClass('node', 'es6');
+
+var jsdc = require('jsdc');
 
 var exist = require('./exist');
 
 var isCommonJS;
 var isAMD;
 var isCMD;
+var isModule;
 
 function analyse(context) {
   if(!isCommonJS) {
@@ -79,38 +83,54 @@ exports.analyse = function(code) {
   isCommonJS = false;
   isAMD = false;
   isCMD = false;
+  isModule = false;
 
-  var context = homunculus.getContext('js');
-  context.parse(code);
-  //分析上下文
-  analyse(context);
+  var ast;
+  jsdc.reset();
+  var es6 = jsdc.parse(code);
+  //jsdc编译不会动es5部分，只要有修改就是es6语法
+  if(code && es6 != code) {
+    ast = jsdc.ast();
+    if(ast.first() && ast.first().name() == Es6Node.MODULEBODY) {
+      isModule = true;
+    }
+  }
+  else {
+    var context = homunculus.getContext('js');
+    context.parse(code);
+    //分析上下文
+    analyse(context);
+    ast = context.parser.ast();
+  }
 
   return {
+    'code': es6,
+    'es6': code && es6 != code,
     'isCommonJS': isCommonJS,
     'isAMD': isAMD,
     'isCMD': isCMD,
-    'context': context,
-    'ast': context.parser.ast()
+    'isModule': isModule,
+    'context': context || null,
+    'ast': ast
   };
 };
 
 exports.isCommonJS = function(code) {
-  if(code) {
-    exports.analyse(code);
-  }
+  exports.analyse(code || '');
   return isCommonJS;
 };
 
 exports.isAMD = function(code) {
-  if(code) {
-    exports.analyse(code);
-  }
+  exports.analyse(code || '');
   return isAMD;
 };
 
 exports.isCMD = function(code) {
-  if(code) {
-    exports.analyse(code);
-  }
+  exports.analyse(code || '');
   return isCMD;
+};
+
+exports.isModule = function(code) {
+  exports.analyse(code || '');
+  return isModule;
 };
