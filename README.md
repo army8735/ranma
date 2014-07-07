@@ -1,4 +1,5 @@
-# A converter between CommonJS/AMD/CMD/other
+A converter between CommonJS/AMD/CMD/Module/other
+====
 
 ranma取自同名动漫人物乱马，意指同一个事物的不同形式。
 
