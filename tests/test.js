@@ -277,7 +277,7 @@ describe('simple test', function() {
     });
     it('es6 not module', function() {
       var res = ranma.cjsify('var [a] = [1]');
-      expect(res).to.eql('var a;!function(){var _0_= [1];a=_0_[0]}();module.exports = a;');
+      expect(res).to.eql('var a;!function(){var _0= [1];a=_0[0]}();module.exports = a;');
     });
   });
   describe('cmdify', function() {
@@ -311,7 +311,7 @@ describe('simple test', function() {
     });
     it('es6 not module', function() {
       var res = ranma.cmdify('var [a] = [1]');
-      expect(res).to.eql('define(function(require, exports, module) {var a;!function(){var _0_= [1];a=_0_[0]}();module.exports = a;});');
+      expect(res).to.eql('define(function(require, exports, module) {var a;!function(){var _0= [1];a=_0[0]}();module.exports = a;});');
     });
   });
   describe('amdify', function() {
