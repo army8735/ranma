@@ -65,6 +65,7 @@ function getDefineAmd(context) {
     return index;
   }
 }
+
 function getDefineAndFactory(context) {
   if(context.hasVid('define')) {
     var define = context.getVid('define');
@@ -81,11 +82,18 @@ function getDefineAndFactory(context) {
           && factory.prev().prev().leaves()[0].name() == JsNode.ARRLTR) {
           deps = factory.prev().prev().leaves()[0];
         }
+        var moduleId = null;
+        if(factory.parent().leaves().length > 1
+            && factory.parent().first().name() === JsNode.PRMREXPR
+            && factory.parent().first().first().name() === JsNode.TOKEN ) {
+            moduleId = factory.parent().first();
+        }
         return {
           'define': define[i],
           'deps': deps,
           'factory': factory,
-          'context': context
+          'context': context,
+          'moduleId': moduleId
         };
       }
     }
@@ -100,9 +108,18 @@ function getDefineAndFactory(context) {
 }
 function getDefineDeps(defFact) {
   var res = {
+    'id':null,
     'array': null,
     'params': null
   };
+  if(defFact.moduleId){
+      var idNode = defFact.moduleId.first();
+      res.id = {
+          'start': idNode.token().sIndex(),
+          'end': defFact.moduleId.next().token().sIndex() + 1,
+          'source': idNode.token().content()
+      };
+  }
   //factory为函数时，将依赖改写为cmd形式的require
   if(defFact.factory.name() == JsNode.FNEXPR) {
     if(defFact.deps) {
@@ -180,9 +197,9 @@ exports.convert = function(code, tp) {
                 req += 'require(' + s + ');';
             });
         }
-        code = (defDeps.array ? (code.slice(0, defDeps.array.start)
-            + code.slice(defDeps.array.end, defDeps.params.start)
-          ) : code.slice(0, defDeps.params.start))
+
+        code = code.slice(0, (defDeps.id || defDeps.array || defDeps.params).start)
+          + (defDeps.array ? code.slice(defDeps.array.end, defDeps.params.start) : "")
           + 'require, exports, module' + code.slice(defDeps.params.end, defDeps.fnbody)
           + req
           + code.slice(defDeps.fnbody);
