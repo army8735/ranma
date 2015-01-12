@@ -291,11 +291,15 @@ describe('simple test', function() {
     });
     it('define factory in amd style', function() {
       var res = ranma.cmdify('define(["./a", "./b"], function(a, b) {})');
-      expect(res).to.eql('define(["./a", "./b"], function(require, exports, module) {var a = require("./a");var b = require("./b");})');
+      expect(res).to.eql('define( function(require, exports, module) {var a = require("./a");var b = require("./b");})');
+    });
+    it('define id and factory in amd style', function() {
+        var res = ranma.cmdify('define("moduleId", ["./a", "./b"], function(a, b) {})');
+        expect(res).to.eql('define( function(require, exports, module) {var a = require("./a");var b = require("./b");})');
     });
     it('define deps not compact to params', function() {
       var res = ranma.cmdify('~function(){define(["a", "b"], function f(a){})}()');
-      expect(res).to.eql('~function(){define(["./a", "./b"], function f(require, exports, module){var a = require("./a");})}()');
+      expect(res).to.eql('~function(){define( function f(require, exports, module){var a = require("./a");require("./b");})}()');
     });
     it('commonjs', function() {
       var res = ranma.cmdify('module.exports = a;');
@@ -459,6 +463,7 @@ describe('jslib test', function() {
     });
   });
   describe('jquery-1.8.3', function() {
+    this.timeout(10000);
     var s = fs.readFileSync(path.join(__dirname, './src/jquery-1.8.3.js'), { encoding: 'utf-8' });
     var type = ranma.type.analyse(s);
     it('type isCommonJS', function() {
