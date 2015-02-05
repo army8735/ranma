@@ -1,6 +1,6 @@
 {
   "name": "ranma",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "A converter between CommonJS/AMD/CMD/other",
   "maintainers": [
     {
@@ -37,8 +37,8 @@
   "author": "army8735",
   "license": "MIT",
   "dependencies": {
-    "homunculus": "^0.7.0",
-    "jsdc": "^0.4.16"
+    "homunculus": "^0.7.5",
+    "jsdc": "^0.5.3"
   },
   "main": "./index",
   "spm": {
