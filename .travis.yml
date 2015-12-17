@@ -1,7 +1,7 @@
 language: node_js
 
 node_js:
-  - 0.10
+  - 4.2
 
 before_script:
   - mocha --version
@@ -11,3 +11,5 @@ script:
 
 after_success:
   - make coveralls
+
+sudo: false
